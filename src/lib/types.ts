@@ -1,3 +1,5 @@
+import type { Readable } from "svelte/store";
+
 /**
  Describes some task with an importance ({@link ProgressNode.weight}), 
  a name ({@link ProgressNode.title}), and optionally, 
@@ -32,3 +34,9 @@ export type JSONValue =
   | null
   | JSONValue[]
   | { [key: string]: JSONValue };
+
+export type NodeManager = {
+  progressNode: Readable<ProgressNode | null>;
+  path: Readable<string | null>;
+  needsSave: Readable<boolean>;
+};
