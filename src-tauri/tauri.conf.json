@@ -11,6 +11,19 @@
     "version": "0.0.0"
   },
   "tauri": {
+    "cli": {
+ "description": "", 
+      "longDescription": "", 
+      "beforeHelp": "", 
+      "afterHelp": "", 
+      "args": [
+        {
+          "name": "file",
+          "index": 1,
+          "takesValue": true
+        }
+      ]
+    },
     "allowlist": {
       "all": false,
       "shell": {
