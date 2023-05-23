@@ -2,10 +2,12 @@
   import { getContext } from "svelte";
   import type { NodeManager } from "../types";
   import { open } from "@tauri-apps/api/dialog";
-  import { nodeFromJsonPath } from "../util";
+  import { nodeFromDir, nodeFromJsonPath } from "../ProgressNode/util";
+  import type { Writable } from "svelte/store";
 
-  const { needsSave, path, progressNode } =
-    getContext<NodeManager>("nodeManager");
+  const loadingScreen = getContext<Writable<boolean>>("loading-screen");
+
+  const { path, progressNode } = getContext<NodeManager>("nodeManager");
 
   const onNew = () => {
     $progressNode = {
@@ -33,10 +35,31 @@
 
     if (selection && !Array.isArray(selection)) {
       $progressNode = await nodeFromJsonPath(selection);
+      $path = selection;
     }
   };
 
-  const onNewFromFolder = () => {};
+  const onNewFromFolder = async () => {
+    const selection = await open({
+      directory: true,
+      title: "Pick a folder",
+      multiple: false,
+    });
+
+    if (selection && !Array.isArray(selection)) {
+      $loadingScreen = true;
+      const result = await nodeFromDir(selection);
+      $loadingScreen = false;
+      if (result) {
+        $progressNode = {
+          ...result,
+          configuration: {
+            weightInterpretation: "seconds",
+          },
+        };
+      }
+    }
+  };
 </script>
 
 <div class="content col">
