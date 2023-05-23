@@ -4,6 +4,8 @@ import promiseTimeout from "./promiseTimeout";
 import nodeFromJsonPath from "./nodeFromJsonPath";
 import makeNodeValid from "./makeNodeValid";
 import isNodeValid from "./isNodeValid";
+import nodeFromDir from "./nodeFromDir";
+import getWeightedProgress from "./getWeightedProgress";
 
 export {
   getTotalWeight,
@@ -12,4 +14,6 @@ export {
   nodeFromJsonPath,
   makeNodeValid,
   isNodeValid,
+  nodeFromDir,
+  getWeightedProgress,
 };

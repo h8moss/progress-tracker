@@ -6,7 +6,8 @@ const makeNodeValid = (node: ProgressNode): ProgressNode => {
 
   if (node.children) {
     return {
-      ...node,
+      title: node.title,
+      children: node.children.map((child) => makeNodeValid(child)),
       isDone: undefined,
       weight: undefined,
     };
