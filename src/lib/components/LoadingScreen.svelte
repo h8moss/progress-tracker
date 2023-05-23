@@ -27,6 +27,10 @@
     height: 100%;
   }
 
+  .main > div {
+    margin: auto;
+  }
+
   .lds-default {
     display: inline-block;
     position: relative;
