@@ -1,0 +1,42 @@
+@font-face {
+  font-family: "Fira Sans";
+  src: url("/fonts/FiraSans-Regular.ttf")format("truetype");
+}
+
+:root {
+  --accent: #2F99FC;
+
+  font-family: "Fira Sans", 'Times New Roman';
+}
+
+html {
+  width: 100vw;
+  height: 100vh;
+
+  overflow: hidden;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+
+  padding: 0px;
+  margin: 0px;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  
+  overflow: hidden;
+}
+
+h1 {
+  text-align: center;
+}
+
+button , a{
+  cursor: pointer;
+}
