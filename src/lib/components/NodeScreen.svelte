@@ -1,0 +1,66 @@
+<script lang="ts">
+  import { getContext } from "svelte";
+  import type { NodeManager } from "../types";
+  import { derived } from "svelte/store";
+  import NodeView from "./NodeView.svelte";
+  import ProgressIndicator from "./ProgressIndicator.svelte";
+  import { getTotalWeight, getWeightedProgress } from "../ProgressNode/util";
+  import { tweened } from "svelte/motion";
+  import { cubicOut } from "svelte/easing";
+  import type { NodeConfiguration } from "../ProgressNode/types";
+
+  const { needsSave, progressNode } = getContext<NodeManager>("nodeManager");
+
+  const node = derived(progressNode, (n) => n!);
+
+  const defaultConfig: Required<NodeConfiguration> = {
+    weightInterpretation: "none",
+  };
+
+  $: weightedProgress = getWeightedProgress($node);
+  const tweenWeightedProgress = tweened(weightedProgress, {
+    duration: 200,
+    easing: cubicOut,
+  });
+
+  $: tweenWeightedProgress.set(weightedProgress);
+</script>
+
+<div class="main">
+  <h1>
+    {$node.title}
+  </h1>
+
+  <ProgressIndicator
+    progress={$tweenWeightedProgress}
+    maximum={getTotalWeight($node)}
+  />
+
+  <div class="node-view">
+    <NodeView
+      {defaultConfig}
+      {node}
+      on:changed={(event) => {
+        $progressNode = event.detail;
+        $needsSave = true;
+      }}
+      headless
+    />
+  </div>
+</div>
+
+<style>
+  .main {
+    display: flex;
+    flex-direction: column;
+
+    overflow: auto;
+    height: 100%;
+
+    padding: 1rem;
+  }
+
+  .node-view {
+    padding: 2rem;
+  }
+</style>
