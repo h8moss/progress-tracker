@@ -12,16 +12,16 @@
   },
   "tauri": {
     "cli": {
- "description": "", 
-      "longDescription": "", 
-      "beforeHelp": "", 
-      "afterHelp": "", 
-      "args": [
-        {
-          "name": "file",
-          "index": 1,
-          "takesValue": true
-        }
+      "description": "", 
+        "longDescription": "", 
+        "beforeHelp": "", 
+        "afterHelp": "", 
+        "args": [
+          {
+            "name": "file",
+            "index": 1,
+            "takesValue": true
+          }
       ]
     },
     "allowlist": {
@@ -29,6 +29,14 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "dialog": {
+        "all": false,
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": false
       }
     },
     "bundle": {
