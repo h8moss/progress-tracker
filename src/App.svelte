@@ -1,14 +1,16 @@
 <script lang="ts">
   import { getMatches } from "@tauri-apps/api/cli";
-  import type { NodeManager, ProgressNode } from "./lib/types";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import type { NodeManager } from "./lib/types";
   import { onMount, setContext } from "svelte";
-  import { nodeFromJson, nodeFromJsonPath, promiseTimeout } from "./lib/util";
+  import { nodeFromJsonPath } from "./lib/ProgressNode/util";
   import { writable } from "svelte/store";
   import LoadingScreen from "./lib/components/LoadingScreen.svelte";
   import WelcomeScreen from "./lib/components/WelcomeScreen.svelte";
+  import NodeScreen from "./lib/components/NodeScreen.svelte";
+  import { appWindow } from "@tauri-apps/api/window";
+  import type { ProgressNode } from "./lib/ProgressNode";
 
-  let isLoading = true;
+  const isLoading = writable(true);
   const needsSave = writable(false);
   const path = writable<string | null>(null);
   const progressNode = writable<ProgressNode | null>(null);
@@ -19,22 +21,34 @@
     progressNode,
   });
 
+  setContext("loading-screen", isLoading);
+
   onMount(async () => {
     const matches = await getMatches();
-    if (matches.args.path) {
-      $path = matches.args.path.value as string;
+    if (matches.args.file) {
       try {
+        $path = matches.args.file.value as string;
         $progressNode = await nodeFromJsonPath($path);
-      } catch (_) {}
+      } catch (e) {
+        console.error(e);
+      }
     }
-    isLoading = false;
+    $isLoading = false;
   });
+
+  $: {
+    appWindow.setTitle(
+      ($progressNode?.title ?? "Welcome") +
+        ($needsSave ? "*" : "") +
+        ($path ? ` - ${$path}` : "")
+    );
+  }
 </script>
 
-{#if isLoading}
+{#if $isLoading}
   <LoadingScreen />
 {:else if $progressNode}
-  <p>{$progressNode.title}</p>
+  <NodeScreen />
 {:else}
   <WelcomeScreen />
 {/if}
