@@ -28,7 +28,6 @@
     index: number,
     newChild: CustomEvent<ProgressNode>
   ) => {
-    console.log({ newChild, $node });
     if ($node.children) {
       const copy = { ...$node };
       copy.children![index] = newChild.detail;
@@ -58,12 +57,6 @@
     weight: getTotalWeight($node),
     weightInterpretation: configuration.weightInterpretation,
   });
-
-  $: {
-    console.log({
-      configuration,
-    });
-  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
