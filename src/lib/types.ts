@@ -19,9 +19,9 @@ export type ProgressNode = {
  */
   children?: ProgressNode[];
   /**
- @param {number} weight How important this task is.
+ @param {number?} weight How important this task is.
  */
-  weight: number;
+  weight?: number;
 };
 
 /**
