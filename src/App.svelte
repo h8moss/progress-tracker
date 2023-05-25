@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getMatches } from "@tauri-apps/api/cli";
   import type { NodeManager } from "./lib/types";
-  import { onMount, setContext } from "svelte";
+  import { onMount, setContext, onDestroy } from "svelte";
   import { nodeFromJsonPath } from "./lib/ProgressNode/util";
   import { writable } from "svelte/store";
   import LoadingScreen from "./lib/components/LoadingScreen.svelte";
@@ -9,6 +9,7 @@
   import NodeScreen from "./lib/components/NodeScreen.svelte";
   import { appWindow } from "@tauri-apps/api/window";
   import type { ProgressNode } from "./lib/ProgressNode";
+  import appEventListener from "./lib/util/appEventListener";
 
   const isLoading = writable(true);
   const needsSave = writable(false);
@@ -23,6 +24,8 @@
 
   setContext("loading-screen", isLoading);
 
+  let unlisten: (() => void) | null = null;
+
   onMount(async () => {
     const matches = await getMatches();
     if (matches.args.file) {
@@ -34,6 +37,17 @@
       }
     }
     $isLoading = false;
+
+    unlisten = await appEventListener({
+      progressNode,
+      isLoading,
+      path,
+      needsSave,
+    });
+  });
+
+  onDestroy(() => {
+    if (unlisten) unlisten();
   });
 
   $: {
