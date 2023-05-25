@@ -22,9 +22,9 @@ const nodeFromDir = async (path: string): Promise<ProgressNode | null> => {
     const entries = await readDir(path);
     return makeNodeValid({
       title: path.split("\\").at(-1) ?? "",
-      children: (await Promise.all(entries.map((e) => handleEntry(e)!))).map(
-        (v) => v!
-      ),
+      children: (await Promise.all(entries.map((e) => handleEntry(e)!)))
+        .filter((v) => v !== null)
+        .map((v) => v!),
     });
   }
   return null;
