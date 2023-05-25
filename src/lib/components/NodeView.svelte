@@ -63,10 +63,8 @@
 <div class="content" on:click|stopPropagation={onClick}>
   <div class="head" class:headless>
     <div class="title">
-      {#if $node.isDone !== undefined}<input
-          type="checkbox"
-          bind:checked={$node.isDone}
-        />
+      {#if $node.isDone !== undefined}
+        <input type="checkbox" bind:checked={$node.isDone} />
       {/if}
       <p>{$node.title}</p>
     </div>
