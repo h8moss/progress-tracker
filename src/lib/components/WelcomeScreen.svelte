@@ -4,61 +4,22 @@
   import { open } from "@tauri-apps/api/dialog";
   import { nodeFromDir, nodeFromJsonPath } from "../ProgressNode/util";
   import type { Writable } from "svelte/store";
+  import { emit } from "@tauri-apps/api/event";
 
   const loadingScreen = getContext<Writable<boolean>>("loading-screen");
 
   const { path, progressNode } = getContext<NodeManager>("nodeManager");
 
   const onNew = () => {
-    $progressNode = {
-      title: "Untitled",
-      children: [],
-    };
+    emit("new", "");
   };
 
   const onOpen = async () => {
-    const selection = await open({
-      directory: false,
-      filters: [
-        {
-          name: "Json",
-          extensions: ["json"],
-        },
-        {
-          name: "Progress",
-          extensions: ["prog"],
-        },
-      ],
-      multiple: false,
-      title: "Select a file",
-    });
-
-    if (selection && !Array.isArray(selection)) {
-      $progressNode = await nodeFromJsonPath(selection);
-      $path = selection;
-    }
+    emit("open");
   };
 
   const onNewFromFolder = async () => {
-    const selection = await open({
-      directory: true,
-      title: "Pick a folder",
-      multiple: false,
-    });
-
-    if (selection && !Array.isArray(selection)) {
-      $loadingScreen = true;
-      const result = await nodeFromDir(selection);
-      $loadingScreen = false;
-      if (result) {
-        $progressNode = {
-          ...result,
-          configuration: {
-            weightInterpretation: "seconds",
-          },
-        };
-      }
-    }
+    emit("new-folder", "");
   };
 </script>
 
