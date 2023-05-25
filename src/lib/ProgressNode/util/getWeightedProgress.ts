@@ -6,6 +6,7 @@ const getWeightedProgress = (node: ProgressNode): number => {
   }
 
   if (node.children) {
+    if (node.children.length === 0) return 0;
     return node.children
       .map((child) => getWeightedProgress(child))
       .reduce((prev, curr) => prev + curr);
