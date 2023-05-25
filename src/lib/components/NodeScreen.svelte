@@ -34,6 +34,7 @@
   <ProgressIndicator
     progress={$tweenWeightedProgress}
     maximum={getTotalWeight($node)}
+    sticky
   />
 
   <div class="node-view">
