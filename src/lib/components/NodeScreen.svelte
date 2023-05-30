@@ -45,6 +45,7 @@
         $progressNode = event.detail;
         $needsSave = true;
       }}
+      canDelete={false}
       headless
     />
   </div>

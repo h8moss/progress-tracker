@@ -9,7 +9,8 @@
   import NodeScreen from "./lib/components/NodeScreen.svelte";
   import { appWindow } from "@tauri-apps/api/window";
   import type { ProgressNode } from "./lib/ProgressNode";
-  import appEventListener from "./lib/util/appEventListener";
+  import { appEventListener } from "./lib/util";
+  import ContextMenuHandler from "./lib/components/ContextMenuHandler.svelte";
 
   const isLoading = writable(true);
   const needsSave = writable(false);
@@ -28,7 +29,7 @@
 
   onMount(async () => {
     const matches = await getMatches();
-    if (matches.args.file) {
+    if (matches.args.file.value) {
       try {
         $path = matches.args.file.value as string;
         $progressNode = await nodeFromJsonPath($path);
@@ -59,10 +60,12 @@
   }
 </script>
 
-{#if $isLoading}
-  <LoadingScreen />
-{:else if $progressNode}
-  <NodeScreen />
-{:else}
-  <WelcomeScreen />
-{/if}
+<ContextMenuHandler>
+  {#if $isLoading}
+    <LoadingScreen />
+  {:else if $progressNode}
+    <NodeScreen />
+  {:else}
+    <WelcomeScreen />
+  {/if}
+</ContextMenuHandler>
