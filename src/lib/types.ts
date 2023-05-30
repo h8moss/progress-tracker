@@ -24,3 +24,21 @@ export type WeightInterpretation =
   | "centimeters"
   | "grams"
   | "bytes";
+
+export type ContextMenuItem = {
+  label: string;
+  id: string;
+
+  color?: string;
+};
+
+export type ContextMenuItemHandler = (
+  item: ContextMenuItem
+) => void | Promise<void>;
+
+export type ContextMenuHandle = {
+  showContextMenu: (
+    items: ContextMenuItem[],
+    handler: ContextMenuItemHandler
+  ) => Promise<void>;
+};
