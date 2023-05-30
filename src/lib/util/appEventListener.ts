@@ -4,6 +4,8 @@ import type { ProgressNode } from "../ProgressNode";
 import { open, save } from "@tauri-apps/api/dialog";
 import { nodeFromDir, nodeFromJsonPath } from "../ProgressNode/util";
 import { invoke } from "@tauri-apps/api";
+import { appWindow } from "@tauri-apps/api/window";
+import { confirm } from "@tauri-apps/api/dialog";
 
 interface Args {
   progressNode: Writable<ProgressNode | null>;
@@ -29,10 +31,7 @@ const appEventListener = async ({
   path,
   needsSave,
 }: Args) => {
-  let unlistenArr: (() => void)[] = [];
-
-  unlistenArr = [
-    ...unlistenArr,
+  let unlistenArr: (() => void)[] = [
     await listen("new", (_) => {
       progressNode.set({
         title: "Untitled",
@@ -42,10 +41,6 @@ const appEventListener = async ({
       path.set(null);
       needsSave.set(true);
     }),
-  ];
-
-  unlistenArr = [
-    ...unlistenArr,
     await listen("new-folder", async (_) => {
       const selection = await open({
         directory: true,
@@ -69,10 +64,6 @@ const appEventListener = async ({
         needsSave.set(true);
       }
     }),
-  ];
-
-  unlistenArr = [
-    ...unlistenArr,
     await listen("open", async (_) => {
       const selection = await open({
         directory: false,
@@ -85,10 +76,6 @@ const appEventListener = async ({
         progressNode.set(await nodeFromJsonPath(selection));
       }
     }),
-  ];
-
-  unlistenArr = [
-    ...unlistenArr,
     await listen("save-as", async (_) => {
       const selection = await save({
         filters: progressFilters,
@@ -98,10 +85,6 @@ const appEventListener = async ({
         emit("save", selection);
       }
     }),
-  ];
-
-  unlistenArr = [
-    ...unlistenArr,
     await listen("get-save-path", async (_) => {
       if (get(path)) {
         emit("save", get(path));
@@ -109,10 +92,6 @@ const appEventListener = async ({
         emit("save-as", "");
       }
     }),
-  ];
-
-  unlistenArr = [
-    ...unlistenArr,
     await listen("save", async (event: Event<string>) => {
       const currentProgressNode = get(progressNode);
       if (currentProgressNode) {
@@ -121,6 +100,18 @@ const appEventListener = async ({
           value: JSON.stringify(currentProgressNode),
         });
         needsSave.set(false);
+      }
+    }),
+    await appWindow.onCloseRequested(async (event) => {
+      if (get(needsSave)) {
+        const confirmed = await confirm("Save before closing?", {
+          cancelLabel: "No",
+          okLabel: "Yes",
+        });
+
+        if (confirmed) {
+          await emit("get-save-path");
+        }
       }
     }),
   ];
