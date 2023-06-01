@@ -6,6 +6,7 @@ of the children together.
 @returns {number} The weight of the node
 */
 const getTotalWeight = (node: ProgressNode): number => {
+  if (!node) return 0;
   let weight = 0;
   if (node.weight) {
     weight += node.weight;

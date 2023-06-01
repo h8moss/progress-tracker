@@ -1,6 +1,7 @@
 import type { ProgressNode } from "../types";
 
 const getWeightedProgress = (node: ProgressNode): number => {
+  if (!node) return 0;
   if (node.weight && node.isDone !== undefined) {
     return node.isDone ? node.weight : 0;
   }
