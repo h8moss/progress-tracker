@@ -1,7 +1,14 @@
-# Tauri + Svelte + Typescript
+# Progress tracker
+---
+A simple, open-source TODO list and progress tracker for windows, macOS and Linux. Built using tauri and svelte.
 
-This template should help get you started developing with Tauri, Svelte and TypeScript in Vite.
+## Features
 
-## Recommended IDE Setup
+### Nested Tasks.
+A task may optionally be comprised of smaller, simpler tasks.
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+### Weights.
+Each task has a weight assigned to it. A heavier task will advance the progress bar more when completed.
+
+### Automatic video weights.
+Automatically create a TODO list based on the duration of videos in your filesystem.
