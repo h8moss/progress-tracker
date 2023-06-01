@@ -36,7 +36,6 @@
       const menuHeight = Math.max(MENU_ITEM_HEIGHT * items.length, 100);
 
       const windowSize = await appWindow.innerSize();
-      const outerSize = await appWindow.outerSize();
       const offset = {
         x: windowSize.width - mouse.x < MENU_WIDTH ? -MENU_WIDTH : 0,
         y: windowSize.height - mouse.y < menuHeight ? -menuHeight : 0,
@@ -64,7 +63,9 @@
 {#if showMenu}
   <button
     class="backdrop"
-    on:click={() => (showMenu = false)}
+    on:click={() => {
+      showMenu = false;
+    }}
     on:contextmenu|preventDefault={() => {
       showMenu = false;
       itemHandler = null;
