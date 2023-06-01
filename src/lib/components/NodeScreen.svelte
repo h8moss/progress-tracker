@@ -24,32 +24,38 @@
   });
 
   $: tweenWeightedProgress.set(weightedProgress);
+
+  let changeCounter = 0;
 </script>
 
-<div class="main">
-  <h1>
-    {$node.title}
-  </h1>
+{#key changeCounter}
+  <div class="main">
+    <h1>
+      {$node.title}
+    </h1>
 
-  <ProgressIndicator
-    progress={$tweenWeightedProgress}
-    maximum={getTotalWeight($node)}
-    sticky
-  />
-
-  <div class="node-view">
-    <NodeView
-      {defaultConfig}
-      {node}
-      on:changed={(event) => {
-        $progressNode = event.detail;
-        $needsSave = true;
-      }}
-      canDelete={false}
-      headless
+    <ProgressIndicator
+      progress={$tweenWeightedProgress}
+      maximum={getTotalWeight($node)}
+      sticky
     />
+
+    <div class="node-view">
+      <NodeView
+        {defaultConfig}
+        {node}
+        on:changed={(event) => {
+          changeCounter++;
+          $progressNode = event.detail;
+          $needsSave = true;
+        }}
+        canDelete={false}
+        headless
+        path={`//${$node.title}`}
+      />
+    </div>
   </div>
-</div>
+{/key}
 
 <style>
   .main {
