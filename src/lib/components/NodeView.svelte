@@ -20,6 +20,7 @@
   export let node: Readable<ProgressNode>;
   export let defaultConfig: Required<NodeConfiguration>;
   export let canDelete = true;
+  export let path: string;
 
   let showChildren = true;
 
@@ -34,7 +35,7 @@
   const onClick = () => {
     if ($node.children) showChildren = !showChildren;
     if ($node.isDone !== undefined) {
-      dispatch("changed", { ...$node, isDone: !$node.isDone });
+      dispatch("changed", { ...structuredClone($node), isDone: !$node.isDone });
     }
   };
 
@@ -44,7 +45,7 @@
   ) => {
     if ($node.children) {
       const child = newChild.detail;
-      const copy = { ...$node };
+      const copy = structuredClone($node);
       if (child === null) {
         copy.children?.splice(index, 1);
       } else {
@@ -63,8 +64,8 @@
   $: tweenWeightedProgress.set(weightedProgress);
 
   $: configuration = {
-    ...defaultConfig,
-    ...$node.configuration,
+    ...structuredClone(defaultConfig),
+    ...structuredClone($node ? $node.configuration : {}),
   } as Required<NodeConfiguration>;
 
   $: interpretedProgress = interpretWeight({
@@ -85,7 +86,6 @@
   const contextMenuContext = getContext<ContextMenuHandle>("context-menu");
 
   const onContextMenu = () => {
-    console.log($node.children);
     const childrenSpecificOptions = $node.children
       ? [
           { id: "toggle-all", label: "Toggle all" },
@@ -127,14 +127,14 @@
           case "toggle-children":
             if ($node.children) {
               dispatch("changed", {
-                ...$node,
+                ...structuredClone($node),
                 children: undefined,
                 isDone: false,
                 weight: 1,
               });
             } else {
               dispatch("changed", {
-                ...$node,
+                ...structuredClone($node),
                 children: [],
                 isDone: undefined,
                 weight: undefined,
@@ -143,9 +143,9 @@
             break;
           case "add-child":
             dispatch("changed", {
-              ...$node,
+              ...structuredClone($node),
               children: [
-                ...$node.children!,
+                ...structuredClone($node.children!),
                 {
                   title: "Untitled",
                   isDone: false,
@@ -171,71 +171,81 @@
   };
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-  class="content"
-  on:click|stopPropagation={onClick}
-  on:contextmenu|preventDefault|stopPropagation={onContextMenu}
->
-  <div class="head" class:headless>
-    <div class="title">
-      {#if $node.isDone !== undefined}
-        <input type="checkbox" bind:checked={$node.isDone} />
-      {/if}
-      {#if isEditingTitle}
-        <div class="editing-input" on:click|stopPropagation>
-          <input bind:value={titleEdited} />
-          <button
-            on:click={() => {
-              dispatch("changed", { ...$node, title: titleEdited });
-              isEditingTitle = false;
-            }}>Ok</button
-          >
+{#if $node}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div
+    class="content"
+    on:click|stopPropagation={onClick}
+    on:contextmenu|preventDefault|stopPropagation={onContextMenu}
+  >
+    <div class="head" class:headless>
+      <div class="title">
+        {#if $node.isDone !== undefined}
+          <input type="checkbox" bind:checked={$node.isDone} />
+        {/if}
+        {#if isEditingTitle}
+          <div class="editing-input" on:click|stopPropagation>
+            <input bind:value={titleEdited} />
+            <button
+              on:click={() => {
+                dispatch("changed", {
+                  ...structuredClone($node),
+                  title: titleEdited,
+                });
+                isEditingTitle = false;
+              }}>Ok</button
+            >
+          </div>
+        {:else}
+          <p>{$node.title}</p>
+        {/if}
+      </div>
+      <ProgressIndicator
+        progress={$tweenWeightedProgress}
+        maximum={getTotalWeight($node)}
+      />
+    </div>
+    <div class="weights">
+      <p>{interpretedProgress}</p>
+
+      {#if isEditingWeight}
+        <div>
+          <div>
+            <input bind:value={weightEdited} type="number" />
+            <p>{interpretedEditedWeight}</p>
+          </div>
+          <button>Ok</button>
         </div>
       {:else}
-        <p>{$node.title}</p>
+        <p>
+          {interpretedWeight}
+        </p>
       {/if}
     </div>
-    <ProgressIndicator
-      progress={$tweenWeightedProgress}
-      maximum={getTotalWeight($node)}
-    />
-  </div>
-  <div class="weights">
-    <p>{interpretedProgress}</p>
-
-    {#if isEditingWeight}
-      <div>
-        <div>
-          <input bind:value={weightEdited} type="number" />
-          <p>{interpretedEditedWeight}</p>
-        </div>
-        <button>Ok</button>
+    {#if $node.children && showChildren}
+      <div
+        class="children"
+        transition:slide={{
+          duration: 200,
+          easing: cubicInOut,
+        }}
+      >
+        {#key $node.children.length}
+          {#each $node.children as child, index (`${path}//${child.title}`)}
+            <svelte:self
+              node={derived(node, (node) => {
+                return node && node.children && node.children[index];
+              })}
+              on:changed={(newChild) => onChildChanged(index, newChild)}
+              defaultConfig={configuration}
+              path={`${path}//${child.title}`}
+            />
+          {/each}
+        {/key}
       </div>
-    {:else}
-      <p>
-        {interpretedWeight}
-      </p>
     {/if}
   </div>
-  {#if $node.children && showChildren}
-    <div
-      class="children"
-      transition:slide={{
-        duration: 200,
-        easing: cubicInOut,
-      }}
-    >
-      {#each $node.children as child, index (child.title)}
-        <svelte:self
-          node={derived(node, (node) => node.children && node.children[index])}
-          on:changed={(newChild) => onChildChanged(index, newChild)}
-          defaultConfig={configuration}
-        />
-      {/each}
-    </div>
-  {/if}
-</div>
+{/if}
 
 <style>
   .content {
