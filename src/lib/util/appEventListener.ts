@@ -74,6 +74,7 @@ const appEventListener = async ({
 
       if (selection && !Array.isArray(selection)) {
         progressNode.set(await nodeFromJsonPath(selection));
+        path.set(selection);
       }
     }),
     await listen("save-as", async (_) => {
