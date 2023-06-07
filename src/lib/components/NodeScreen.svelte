@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from "svelte";
   import type { NodeManager } from "../types";
-  import { derived } from "svelte/store";
+  import { derived, writable } from "svelte/store";
   import NodeView from "./NodeView.svelte";
   import ProgressIndicator from "./ProgressIndicator.svelte";
   import { getTotalWeight, getWeightedProgress } from "../ProgressNode/util";
@@ -17,6 +17,16 @@
     weightInterpretation: "none",
   };
 
+  const initialTitle = $node.title;
+
+  const titleStore = writable($node.title);
+
+  $: $titleStore = $node.title;
+  $: {
+    $progressNode = { ...$progressNode, title: $titleStore };
+    $needsSave = true;
+  }
+
   $: weightedProgress = getWeightedProgress($node);
   const tweenWeightedProgress = tweened(weightedProgress, {
     duration: 200,
@@ -24,12 +34,24 @@
   });
 
   $: tweenWeightedProgress.set(weightedProgress);
+
+  $: if ($node.title !== initialTitle) $needsSave = true;
+
+  $: console.log({ $node });
 </script>
 
+<!--TODO: Fix item duplication
+    When changing the title of a task, the task's path changes with it. This
+    tells svelte it should add a new item to the list of tasks. 
+
+    To fix it, give every task a random ID. it's that simple. 
+    <!--
+    ! If you want to save the ID in the file. make sure to expect some files to 
+    ! not have an ID. This will keep backwards compatibility. 
+-->
+
 <div class="main">
-  <h1>
-    {$node.title}
-  </h1>
+  <h1 bind:textContent={$titleStore} contenteditable />
 
   <ProgressIndicator
     progress={$tweenWeightedProgress}
@@ -44,6 +66,7 @@
       on:changed={(event) => {
         $progressNode = event.detail;
         $needsSave = true;
+        console.log({ $progressNode });
       }}
       canDelete={false}
       headless
@@ -65,5 +88,6 @@
 
   .node-view {
     padding: 2rem;
+    flex: 1;
   }
 </style>
