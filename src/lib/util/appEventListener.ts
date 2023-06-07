@@ -35,7 +35,13 @@ const appEventListener = async ({
     await listen("new", (_) => {
       progressNode.set({
         title: "Untitled",
-        children: [],
+        children: [
+          {
+            title: "Task 1",
+            weight: 1,
+            isDone: false,
+          },
+        ],
       });
       isLoading.set(false);
       path.set(null);
