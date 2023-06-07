@@ -7,6 +7,8 @@ import nodeFromDir from "./nodeFromDir";
 import getWeightedProgress from "./getWeightedProgress";
 import getIsDone from "./getIsDone";
 import setIsDone from "./setIsDone";
+import copyWith from "./copyWith";
+import plusChildren from "./plusChildren";
 
 export {
   getTotalWeight,
@@ -18,4 +20,6 @@ export {
   getWeightedProgress,
   getIsDone,
   setIsDone,
+  copyWith,
+  plusChildren,
 };
