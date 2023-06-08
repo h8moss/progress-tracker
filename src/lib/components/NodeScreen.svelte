@@ -23,8 +23,10 @@
 
   $: $titleStore = $node.title;
   $: {
-    $progressNode = { ...$progressNode, title: $titleStore };
-    $needsSave = true;
+    if ($progressNode) {
+      $progressNode = { ...$progressNode, title: $titleStore };
+      $needsSave = true;
+    }
   }
 
   $: weightedProgress = getWeightedProgress($node);
@@ -39,16 +41,6 @@
 
   $: console.log({ $node });
 </script>
-
-<!--TODO: Fix item duplication
-    When changing the title of a task, the task's path changes with it. This
-    tells svelte it should add a new item to the list of tasks. 
-
-    To fix it, give every task a random ID. it's that simple. 
-    <!--
-    ! If you want to save the ID in the file. make sure to expect some files to 
-    ! not have an ID. This will keep backwards compatibility. 
--->
 
 <div class="main">
   <h1 bind:textContent={$titleStore} contenteditable />
