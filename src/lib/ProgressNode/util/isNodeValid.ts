@@ -1,6 +1,6 @@
 import type { ProgressNode } from "../types";
 
-const isNodeValid = (node: ProgressNode) => {
+const isNodeValid = (node: ProgressNode): boolean => {
   if (node.children)
     return (
       node.isDone === undefined &&

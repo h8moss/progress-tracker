@@ -180,11 +180,11 @@
             dispatch(
               "changed",
               plusChildren($node, [
-                {
+                makeNodeValid({
                   title: generateChildTitle($node.children!),
                   isDone: false,
                   weight: 1,
-                },
+                }),
               ])
             );
             showChildren = true;
@@ -282,18 +282,16 @@
         {#if $node.children.length === 0}
           <p>No sub-tasks yet...</p>
         {/if}
-        {#key $node.children.length}
-          {#each $node.children as child, index (`${path}//${child.title}`)}
-            <svelte:self
-              node={derived(node, (node) => {
-                return node && node.children && node.children[index];
-              })}
-              on:changed={(newChild) => onChildChanged(index, newChild)}
-              defaultConfig={configuration}
-              path={`${path}//${child.title}`}
-            />
-          {/each}
-        {/key}
+        {#each $node.children as child, index (child.id)}
+          <svelte:self
+            node={derived(node, (node) => {
+              return node && node.children && node.children[index];
+            })}
+            on:changed={(newChild) => onChildChanged(index, newChild)}
+            defaultConfig={configuration}
+            path={`${path}//${child.title}`}
+          />
+        {/each}
       </div>
     {/if}
   </div>

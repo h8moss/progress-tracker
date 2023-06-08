@@ -2,6 +2,7 @@ import { readDir, exists } from "@tauri-apps/api/fs";
 import type { ProgressNode } from "../types";
 import { invoke } from "@tauri-apps/api";
 import makeNodeValid from "./makeNodeValid";
+import generateRandomID from "./generateRandomID";
 
 const notNullOrUndefined = <TValue>(
   value: TValue | null | undefined
@@ -62,12 +63,12 @@ const handleEntry = async (entry: Entry): Promise<ProgressNode | null> => {
 
   const title = entry.name.split(".").at(0) ?? entry.name;
 
-  return {
+  return generateRandomID({
     title,
     children,
     isDone,
     weight,
-  };
+  });
 };
 
 export default nodeFromDir;

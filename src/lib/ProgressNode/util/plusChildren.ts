@@ -6,6 +6,7 @@ const plusChildren = (
   children: ProgressNode[]
 ): ProgressNode => {
   const oldChildren = node.children ? structuredClone(node.children) : [];
+
   return copyWith(node, {
     children: [...oldChildren, ...children],
   });

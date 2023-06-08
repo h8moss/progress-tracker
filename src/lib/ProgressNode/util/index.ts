@@ -9,6 +9,7 @@ import getIsDone from "./getIsDone";
 import setIsDone from "./setIsDone";
 import copyWith from "./copyWith";
 import plusChildren from "./plusChildren";
+import generateRandomID from "./generateRandomID";
 
 export {
   getTotalWeight,
@@ -22,4 +23,5 @@ export {
   setIsDone,
   copyWith,
   plusChildren,
+  generateRandomID,
 };
