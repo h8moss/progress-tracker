@@ -1,12 +1,7 @@
 <script lang="ts">
   import { getContext } from "svelte";
   import type { NodeManager } from "../types";
-  import { open } from "@tauri-apps/api/dialog";
-  import { nodeFromDir, nodeFromJsonPath } from "../ProgressNode/util";
-  import type { Writable } from "svelte/store";
   import { emit } from "@tauri-apps/api/event";
-
-  const loadingScreen = getContext<Writable<boolean>>("loading-screen");
 
   const { path, progressNode } = getContext<NodeManager>("nodeManager");
 
