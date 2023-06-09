@@ -17,7 +17,7 @@
   } from "../ProgressNode/util";
   import type { NodeConfiguration } from "../ProgressNode/types";
   import { interpretWeight } from "../util";
-  import type { ContextMenuHandle } from "../types";
+  import type { ConfigurationDialogContext, ContextMenuHandle } from "../types";
   import { slide } from "svelte/transition";
   import ArrowRight from "./ArrowRight.svelte";
 
@@ -110,6 +110,9 @@
   $: $arrowRotation = showChildren ? 90 : 0;
 
   const contextMenuContext = getContext<ContextMenuHandle>("context-menu");
+  const configurationDialogCtx = getContext<ConfigurationDialogContext>(
+    "configuration-dialog"
+  );
 
   const onContextMenu = () => {
     const childrenSpecificOptions = $node.children
@@ -135,6 +138,10 @@
               {
                 id: "toggle-children",
                 label: $node.children ? "Make childless" : "Make childful",
+              },
+              {
+                id: "configuration",
+                label: "Configuration",
               },
             ]),
 
@@ -199,6 +206,22 @@
           case "edit-weight":
             isEditingWeight = true;
             weightEdited = $node.weight!;
+            break;
+
+          case "configuration":
+            configurationDialogCtx.open(
+              {
+                ...defaultConfig,
+                ...$node.configuration,
+              },
+              (value) =>
+                dispatch(
+                  "changed",
+                  copyWith($node, {
+                    configuration: value,
+                  })
+                )
+            );
             break;
         }
       }
