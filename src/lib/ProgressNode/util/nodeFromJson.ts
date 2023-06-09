@@ -19,7 +19,7 @@ const nodeFromJson = (json: JSONValue): ProgressNode => {
   if (json === null || typeof json !== "object" || Array.isArray(json)) {
     throw "JSON value does not represent an object, and thus, it can't be a node";
   }
-  const { title, weight, children, isDone, configuration } = json;
+  const { title, weight, children, isDone, configuration, id } = json;
   const config = configObjectAsConfiguration(configuration);
 
   if (
@@ -27,7 +27,8 @@ const nodeFromJson = (json: JSONValue): ProgressNode => {
     (typeof weight !== "undefined" && typeof weight !== "number") ||
     (typeof children !== "undefined" && !Array.isArray(children)) ||
     (typeof isDone !== "undefined" && typeof isDone !== "boolean") ||
-    (typeof configuration !== "undefined" && config === null)
+    (typeof configuration !== "undefined" && config === null) ||
+    (typeof id !== "undefined" && typeof id !== "string")
   ) {
     console.error({
       json,
@@ -35,6 +36,7 @@ const nodeFromJson = (json: JSONValue): ProgressNode => {
       weight,
       children,
       isDone,
+      id,
       configuration,
     });
     throw "JSON value does not represent a node. Missing either title, weight, children, configuration or isDone";

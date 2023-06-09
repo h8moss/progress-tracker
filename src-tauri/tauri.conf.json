@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "progress-tracker",
+    "productName": "progress tracker",
     "version": "1.0.1"
   },
   "tauri": {
@@ -86,6 +86,9 @@
         "renameFile": false,
         "scope": [],
         "writeFile": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {
@@ -110,7 +113,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "progress-tracker",
+        "title": "Progress Tracker",
         "width": 800,
         "height": 600
       }

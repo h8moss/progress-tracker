@@ -32,8 +32,13 @@ export type ProgressNode = {
  node. Configuration cascades
    */
   configuration?: NodeConfiguration;
+
+  /**
+   @param {string} id A unique identifier for the task
+   */
+  id: string;
 };
 
-/**
- Defines an object that can be represented in a .json file
- */
+export type ProgressNodeNoID = Omit<ProgressNode, "id" | "children"> & {
+  children?: ProgressNodeNoID[];
+};

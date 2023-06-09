@@ -2,14 +2,18 @@ import { emit, listen, type Event } from "@tauri-apps/api/event";
 import { get, type Readable, type Writable } from "svelte/store";
 import type { ProgressNode } from "../ProgressNode";
 import { open, save } from "@tauri-apps/api/dialog";
-import { nodeFromDir, nodeFromJsonPath } from "../ProgressNode/util";
+import {
+  makeNodeValid,
+  nodeFromDir,
+  nodeFromJsonPath,
+} from "../ProgressNode/util";
 import { invoke } from "@tauri-apps/api";
 import { appWindow } from "@tauri-apps/api/window";
 import { confirm } from "@tauri-apps/api/dialog";
 
 interface Args {
   progressNode: Writable<ProgressNode | null>;
-  isLoading: Writable<boolean>;
+  isLoading: Writable<number | null>;
   path: Writable<string | null>;
   needsSave: Writable<boolean>;
 }
@@ -33,11 +37,19 @@ const appEventListener = async ({
 }: Args) => {
   let unlistenArr: (() => void)[] = [
     await listen("new", (_) => {
-      progressNode.set({
-        title: "Untitled",
-        children: [],
-      });
-      isLoading.set(false);
+      progressNode.set(
+        makeNodeValid({
+          title: "Untitled",
+          children: [
+            {
+              title: "Task 1",
+              weight: 1,
+              isDone: false,
+            },
+          ],
+        })
+      );
+      isLoading.set(null);
       path.set(null);
       needsSave.set(true);
     }),
@@ -49,9 +61,12 @@ const appEventListener = async ({
       });
 
       if (selection && !Array.isArray(selection)) {
-        isLoading.set(true);
-        const result = await nodeFromDir(selection);
-        isLoading.set(false);
+        isLoading.set(0.0);
+        const result = await nodeFromDir(selection, (v) => {
+          isLoading.set(v * 100);
+          console.log({ v });
+        });
+        isLoading.set(null);
         if (result) {
           progressNode.set({
             ...result,
