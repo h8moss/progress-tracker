@@ -13,6 +13,7 @@
   import ContextMenuHandler from "./lib/components/ContextMenuHandler.svelte";
   import { tweened } from "svelte/motion";
   import { cubicInOut } from "svelte/easing";
+  import ConfigurationDialog from "./lib/components/ConfigurationDialog.svelte";
 
   const isLoading = tweened<number | null>(50, {
     duration: 200,
@@ -68,12 +69,14 @@
   }
 </script>
 
-<ContextMenuHandler>
-  {#if $isLoading !== null}
-    <LoadingScreen progress={$isLoading} showLabel />
-  {:else if $progressNode}
-    <NodeScreen />
-  {:else}
-    <WelcomeScreen />
-  {/if}
-</ContextMenuHandler>
+<ConfigurationDialog>
+  <ContextMenuHandler>
+    {#if $isLoading !== null}
+      <LoadingScreen progress={$isLoading} showLabel />
+    {:else if $progressNode}
+      <NodeScreen />
+    {:else}
+      <WelcomeScreen />
+    {/if}
+  </ContextMenuHandler>
+</ConfigurationDialog>

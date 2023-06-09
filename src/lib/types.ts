@@ -1,5 +1,7 @@
 import type { Readable } from "svelte/store";
 import type { ProgressNode } from "./ProgressNode";
+import type { WEIGHT_INTERPRETATIONS } from "./ProgressNode/constants";
+import type { NodeConfiguration } from "./ProgressNode/types";
 
 /**
  Defines an object that can be represented in a .json file
@@ -19,12 +21,14 @@ export type NodeManager = {
   needsSave: Readable<boolean>;
 };
 
-export type WeightInterpretation =
-  | "none"
-  | "seconds"
-  | "centimeters"
-  | "grams"
-  | "bytes";
+export type ConfigurationDialogContext = {
+  open: (
+    config: Required<NodeConfiguration>,
+    callback: (result: Required<NodeConfiguration>) => unknown
+  ) => void;
+};
+
+export type WeightInterpretation = (typeof WEIGHT_INTERPRETATIONS)[number];
 
 export type ContextMenuItem = {
   label: string;
