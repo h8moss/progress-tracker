@@ -59,6 +59,8 @@
   });
 </script>
 
+<svelte:body on:contextmenu|preventDefault />
+
 <slot />
 {#if showMenu}
   <button

@@ -3,24 +3,31 @@
   import { derived, type Readable } from "svelte/store";
   import ProgressIndicator from "./ProgressIndicator.svelte";
   import { tweened } from "svelte/motion";
-  import { cubicIn, cubicInOut, cubicOut } from "svelte/easing";
+  import { cubicInOut, cubicOut } from "svelte/easing";
   import type { ProgressNode } from "../ProgressNode";
   import {
+    copyWith,
     getIsDone,
     getTotalWeight,
     getWeightedProgress,
+    isNodeValid,
+    makeNodeValid,
+    plusChildren,
     setIsDone,
   } from "../ProgressNode/util";
   import type { NodeConfiguration } from "../ProgressNode/types";
   import { interpretWeight } from "../util";
-  import type { ContextMenuHandle } from "../types";
+  import type { ConfigurationDialogContext, ContextMenuHandle } from "../types";
   import { slide } from "svelte/transition";
+  import ArrowRight from "./ArrowRight.svelte";
 
   export let headless: boolean = false;
   export let node: Readable<ProgressNode>;
   export let defaultConfig: Required<NodeConfiguration>;
   export let canDelete = true;
   export let path: string;
+
+  const dispatch = createEventDispatcher<{ changed: ProgressNode | null }>();
 
   let showChildren = true;
 
@@ -30,12 +37,22 @@
   let isEditingWeight = false;
   let weightEdited = 0;
 
-  const dispatch = createEventDispatcher<{ changed: ProgressNode | null }>();
+  const generateChildTitle = (children: ProgressNode[]): string => {
+    let count = 0;
+    let title = "Untitled";
+    const titles = children.map((v) => v.title);
+    while (titles.includes(title)) {
+      count++;
+      title = `Untitled - ${count}`;
+    }
+
+    return title;
+  };
 
   const onClick = () => {
     if ($node.children) showChildren = !showChildren;
     if ($node.isDone !== undefined) {
-      dispatch("changed", { ...structuredClone($node), isDone: !$node.isDone });
+      dispatch("changed", copyWith($node, { isDone: !$node.isDone }));
     }
   };
 
@@ -54,6 +71,13 @@
       dispatch("changed", copy);
     }
   };
+
+  const arrowRotation = tweened(0, {
+    duration: 200,
+    easing: cubicInOut,
+  });
+
+  $: if (!isNodeValid($node)) dispatch("changed", makeNodeValid($node));
 
   $: weightedProgress = getWeightedProgress($node);
   const tweenWeightedProgress = tweened(weightedProgress, {
@@ -79,11 +103,16 @@
   });
 
   $: interpretedEditedWeight = interpretWeight({
-    weight: weightEdited,
+    weight: weightEdited ?? 0,
     weightInterpretation: configuration.weightInterpretation,
   });
 
+  $: $arrowRotation = showChildren ? 90 : 0;
+
   const contextMenuContext = getContext<ContextMenuHandle>("context-menu");
+  const configurationDialogCtx = getContext<ConfigurationDialogContext>(
+    "configuration-dialog"
+  );
 
   const onContextMenu = () => {
     const childrenSpecificOptions = $node.children
@@ -99,14 +128,23 @@
         ];
     contextMenuContext.showContextMenu(
       [
-        {
-          id: "rename",
-          label: "Rename",
-        },
-        {
-          id: "toggle-children",
-          label: $node.children ? "Make childless" : "Make childful",
-        },
+        ...(headless
+          ? []
+          : [
+              {
+                id: "rename",
+                label: "Rename",
+              },
+              {
+                id: "toggle-children",
+                label: $node.children ? "Make childless" : "Make childful",
+              },
+              {
+                id: "configuration",
+                label: "Configuration",
+              },
+            ]),
+
         ...childrenSpecificOptions,
         ...(canDelete
           ? [
@@ -126,33 +164,37 @@
             break;
           case "toggle-children":
             if ($node.children) {
-              dispatch("changed", {
-                ...structuredClone($node),
-                children: undefined,
-                isDone: false,
-                weight: 1,
-              });
+              dispatch(
+                "changed",
+                copyWith($node, {
+                  children: undefined,
+                  isDone: false,
+                  weight: 1,
+                })
+              );
             } else {
-              dispatch("changed", {
-                ...structuredClone($node),
-                children: [],
-                isDone: undefined,
-                weight: undefined,
-              });
+              dispatch(
+                "changed",
+                copyWith($node, {
+                  children: [],
+                  isDone: undefined,
+                  weight: undefined,
+                })
+              );
             }
             break;
           case "add-child":
-            dispatch("changed", {
-              ...structuredClone($node),
-              children: [
-                ...structuredClone($node.children!),
-                {
-                  title: "Untitled",
+            dispatch(
+              "changed",
+              plusChildren($node, [
+                makeNodeValid({
+                  title: generateChildTitle($node.children!),
                   isDone: false,
                   weight: 1,
-                },
-              ],
-            });
+                }),
+              ])
+            );
+            showChildren = true;
             break;
           case "delete":
             dispatch("changed", null);
@@ -164,6 +206,22 @@
           case "edit-weight":
             isEditingWeight = true;
             weightEdited = $node.weight!;
+            break;
+
+          case "configuration":
+            configurationDialogCtx.open(
+              {
+                ...defaultConfig,
+                ...$node.configuration,
+              },
+              (value) =>
+                dispatch(
+                  "changed",
+                  copyWith($node, {
+                    configuration: value,
+                  })
+                )
+            );
             break;
         }
       }
@@ -182,16 +240,20 @@
       <div class="title">
         {#if $node.isDone !== undefined}
           <input type="checkbox" bind:checked={$node.isDone} />
+        {:else}
+          <ArrowRight rotation={$arrowRotation} />
         {/if}
         {#if isEditingTitle}
           <div class="editing-input" on:click|stopPropagation>
             <input bind:value={titleEdited} />
             <button
               on:click={() => {
-                dispatch("changed", {
-                  ...structuredClone($node),
-                  title: titleEdited,
-                });
+                dispatch(
+                  "changed",
+                  copyWith($node, {
+                    title: titleEdited,
+                  })
+                );
                 isEditingTitle = false;
               }}>Ok</button
             >
@@ -209,12 +271,22 @@
       <p>{interpretedProgress}</p>
 
       {#if isEditingWeight}
-        <div>
+        <div class="weight-editor">
           <div>
             <input bind:value={weightEdited} type="number" />
             <p>{interpretedEditedWeight}</p>
           </div>
-          <button>Ok</button>
+          <button
+            on:click={() => {
+              dispatch(
+                "changed",
+                copyWith($node, {
+                  weight: weightEdited,
+                })
+              );
+              isEditingWeight = false;
+            }}>Ok</button
+          >
         </div>
       {:else}
         <p>
@@ -222,7 +294,7 @@
         </p>
       {/if}
     </div>
-    {#if $node.children && showChildren}
+    {#if $node.children && (showChildren || headless)}
       <div
         class="children"
         transition:slide={{
@@ -230,18 +302,19 @@
           easing: cubicInOut,
         }}
       >
-        {#key $node.children.length}
-          {#each $node.children as child, index (`${path}//${child.title}`)}
-            <svelte:self
-              node={derived(node, (node) => {
-                return node && node.children && node.children[index];
-              })}
-              on:changed={(newChild) => onChildChanged(index, newChild)}
-              defaultConfig={configuration}
-              path={`${path}//${child.title}`}
-            />
-          {/each}
-        {/key}
+        {#if $node.children.length === 0}
+          <p>No sub-tasks yet...</p>
+        {/if}
+        {#each $node.children as child, index (child.id)}
+          <svelte:self
+            node={derived(node, (node) => {
+              return node && node.children && node.children[index];
+            })}
+            on:changed={(newChild) => onChildChanged(index, newChild)}
+            defaultConfig={configuration}
+            path={`${path}//${child.title}`}
+          />
+        {/each}
       </div>
     {/if}
   </div>
@@ -302,5 +375,9 @@
 
   .editing-input > input {
     flex: 1;
+  }
+
+  .weight-editor {
+    display: flex;
   }
 </style>

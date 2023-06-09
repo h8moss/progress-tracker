@@ -11,8 +11,15 @@
   import type { ProgressNode } from "./lib/ProgressNode";
   import { appEventListener } from "./lib/util";
   import ContextMenuHandler from "./lib/components/ContextMenuHandler.svelte";
+  import { tweened } from "svelte/motion";
+  import { cubicInOut } from "svelte/easing";
+  import ConfigurationDialog from "./lib/components/ConfigurationDialog.svelte";
 
-  const isLoading = writable(true);
+  const isLoading = tweened<number | null>(50, {
+    duration: 200,
+    easing: cubicInOut,
+    interpolate: (a, b) => (t) => (a ?? 100) * (1 - t) + (b ?? 100) * t,
+  });
   const needsSave = writable(false);
   const path = writable<string | null>(null);
   const progressNode = writable<ProgressNode | null>(null);
@@ -30,14 +37,16 @@
   onMount(async () => {
     const matches = await getMatches();
     if (matches.args.file.value) {
+      $isLoading = 25;
       try {
         $path = matches.args.file.value as string;
         $progressNode = await nodeFromJsonPath($path);
+        $isLoading = 90;
       } catch (e) {
         console.error(e);
       }
     }
-    $isLoading = false;
+    $isLoading = null;
 
     unlisten = await appEventListener({
       progressNode,
@@ -60,12 +69,14 @@
   }
 </script>
 
-<ContextMenuHandler>
-  {#if $isLoading}
-    <LoadingScreen />
-  {:else if $progressNode}
-    <NodeScreen />
-  {:else}
-    <WelcomeScreen />
-  {/if}
-</ContextMenuHandler>
+<ConfigurationDialog>
+  <ContextMenuHandler>
+    {#if $isLoading !== null}
+      <LoadingScreen progress={$isLoading} showLabel />
+    {:else if $progressNode}
+      <NodeScreen />
+    {:else}
+      <WelcomeScreen />
+    {/if}
+  </ContextMenuHandler>
+</ConfigurationDialog>
