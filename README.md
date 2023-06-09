@@ -17,6 +17,9 @@ Each task has a weight assigned to it. A heavier task will advance the progress 
 ### Automatic video weights.
 Automatically create a TODO list based on the duration of videos in your filesystem.
 
+## Warning.
+Be warned that, while the app has builds in MacOS and Ubuntu, it has only been tested in windows, and it is very likely to not work properly on ubuntu or macOS. If you find a bug, please do report it on the issues tab.
+
 ## License
 This Application falls under the GNU GPLv3 copyright license, read more on the LICENSE file
 © 2023 Daniel Armenta
