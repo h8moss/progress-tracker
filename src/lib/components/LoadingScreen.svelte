@@ -1,19 +1,79 @@
-<!--Thank you [loading.io](https://loading.io/css/)-->
+<script lang="ts">
+  import { onDestroy, onMount } from "svelte";
+  import { writable } from "svelte/store";
+
+  /** Number from 0 to 100 describing the percentage of advancement */
+  export let progress: number = 50;
+  export let showLabel: boolean = false;
+
+  let offset = writable(0);
+  let rate = -0.5;
+
+  let timer: NodeJS.Timer | null = null;
+
+  $: trueProgress = 100 - progress;
+
+  onMount(() => {
+    timer = setInterval(() => {
+      offset.update((v) => (v + rate) % 100);
+    }, 20);
+  });
+
+  onDestroy(() => {
+    if (timer) {
+      clearInterval(timer);
+    }
+  });
+</script>
 
 <div class="main">
-  <div class="lds-default">
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
+  <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+  <div
+    class="center"
+    on:mouseover={() => (rate = -1)}
+    on:mouseout={() => (rate = -0.5)}
+  >
+    <svg viewBox="-5 -5 110 110">
+      <defs>
+        <linearGradient id="gradient">
+          <stop
+            offset="5%"
+            stop-color="#2f99fc"
+            gradientTransform="rotate(199)"
+          />
+          <stop offset="95%" stop-color="#2a87ff" />
+        </linearGradient>
+      </defs>
+      <mask id="wave-mask">
+        <rect x="0" y="0" width="100" height="100" fill="white" />
+
+        <path
+          stroke="black"
+          fill="black"
+          d="M {$offset} {trueProgress} c 20 10, 30 10, 50 0 c 20 -10, 30 -10, 50 0 c 20 10, 30 10, 50 0 c 20 -10, 30 -10, 50 0 l 0 -120 l -250 0 l 0 120"
+        />
+      </mask>
+
+      <circle
+        cx="50"
+        cy="50"
+        r="50"
+        fill="url(#gradient)"
+        mask="url(#wave-mask)"
+      />
+
+      <circle
+        cx="50"
+        cy="50"
+        r="50"
+        stroke="url(#gradient)"
+        stroke-width="5"
+        fill="transparent"
+      />
+    </svg>
+    <div class:visible={showLabel} class="label">
+      <p>{progress.toFixed(2)}%</p>
+    </div>
   </div>
 </div>
 
@@ -31,89 +91,39 @@
     margin: auto;
   }
 
-  .lds-default {
+  .center {
     display: inline-block;
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 20vw;
+    height: 20vw;
+
+    display: flex;
+
+    overflow: hidden;
+
+    position: relative;
   }
-  .lds-default div {
+
+  .label {
     position: absolute;
-    width: 6px;
-    height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-    animation: lds-default 1.2s linear infinite;
+    margin: auto;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+
+    opacity: 0;
   }
-  .lds-default div:nth-child(1) {
-    animation-delay: 0s;
-    top: 37px;
-    left: 66px;
+
+  .label > p {
+    margin: auto;
+
+    font-size: 2rem;
+    font-weight: bold;
   }
-  .lds-default div:nth-child(2) {
-    animation-delay: -0.1s;
-    top: 22px;
-    left: 62px;
-  }
-  .lds-default div:nth-child(3) {
-    animation-delay: -0.2s;
-    top: 11px;
-    left: 52px;
-  }
-  .lds-default div:nth-child(4) {
-    animation-delay: -0.3s;
-    top: 7px;
-    left: 37px;
-  }
-  .lds-default div:nth-child(5) {
-    animation-delay: -0.4s;
-    top: 11px;
-    left: 22px;
-  }
-  .lds-default div:nth-child(6) {
-    animation-delay: -0.5s;
-    top: 22px;
-    left: 11px;
-  }
-  .lds-default div:nth-child(7) {
-    animation-delay: -0.6s;
-    top: 37px;
-    left: 7px;
-  }
-  .lds-default div:nth-child(8) {
-    animation-delay: -0.7s;
-    top: 52px;
-    left: 11px;
-  }
-  .lds-default div:nth-child(9) {
-    animation-delay: -0.8s;
-    top: 62px;
-    left: 22px;
-  }
-  .lds-default div:nth-child(10) {
-    animation-delay: -0.9s;
-    top: 66px;
-    left: 37px;
-  }
-  .lds-default div:nth-child(11) {
-    animation-delay: -1s;
-    top: 62px;
-    left: 52px;
-  }
-  .lds-default div:nth-child(12) {
-    animation-delay: -1.1s;
-    top: 52px;
-    left: 62px;
-  }
-  @keyframes lds-default {
-    0%,
-    20%,
-    80%,
-    100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.5);
-    }
+
+  .label.visible {
+    opacity: 1;
   }
 </style>

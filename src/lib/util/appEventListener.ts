@@ -13,7 +13,7 @@ import { confirm } from "@tauri-apps/api/dialog";
 
 interface Args {
   progressNode: Writable<ProgressNode | null>;
-  isLoading: Writable<boolean>;
+  isLoading: Writable<number | null>;
   path: Writable<string | null>;
   needsSave: Writable<boolean>;
 }
@@ -49,7 +49,7 @@ const appEventListener = async ({
           ],
         })
       );
-      isLoading.set(false);
+      isLoading.set(null);
       path.set(null);
       needsSave.set(true);
     }),
@@ -61,9 +61,12 @@ const appEventListener = async ({
       });
 
       if (selection && !Array.isArray(selection)) {
-        isLoading.set(true);
-        const result = await nodeFromDir(selection);
-        isLoading.set(false);
+        isLoading.set(0.0);
+        const result = await nodeFromDir(selection, (v) => {
+          isLoading.set(v * 100);
+          console.log({ v });
+        });
+        isLoading.set(null);
         if (result) {
           progressNode.set({
             ...result,
