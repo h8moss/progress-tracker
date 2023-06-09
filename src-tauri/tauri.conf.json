@@ -86,6 +86,9 @@
         "renameFile": false,
         "scope": [],
         "writeFile": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {
