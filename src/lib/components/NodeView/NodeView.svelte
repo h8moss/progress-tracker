@@ -1,10 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher, getContext } from "svelte";
   import { derived, type Readable } from "svelte/store";
-  import ProgressIndicator from "./ProgressIndicator.svelte";
+  import ProgressIndicator from "../ProgressIndicator.svelte";
   import { tweened } from "svelte/motion";
   import { cubicInOut, cubicOut } from "svelte/easing";
-  import type { ProgressNode } from "../ProgressNode";
+  import type { ProgressNode } from "../../ProgressNode";
   import {
     copyWith,
     getIsDone,
@@ -14,12 +14,15 @@
     makeNodeValid,
     plusChildren,
     setIsDone,
-  } from "../ProgressNode/util";
-  import type { NodeConfiguration } from "../ProgressNode/types";
-  import { interpretWeight } from "../util";
-  import type { ConfigurationDialogContext, ContextMenuHandle } from "../types";
+  } from "../../ProgressNode/util";
+  import type { NodeConfiguration } from "../../ProgressNode/types";
+  import { interpretWeight } from "../../util";
+  import type {
+    ConfigurationDialogContext,
+    ContextMenuHandle,
+  } from "../../types";
   import { slide } from "svelte/transition";
-  import ArrowRight from "./ArrowRight.svelte";
+  import ArrowRight from "../ArrowRight.svelte";
 
   export let headless: boolean = false;
   export let node: Readable<ProgressNode>;
