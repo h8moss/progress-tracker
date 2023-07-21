@@ -10,6 +10,7 @@ import setIsDone from "./setIsDone";
 import copyWith from "./copyWith";
 import plusChildren from "./plusChildren";
 import generateRandomID from "./generateRandomID";
+import newChildTitle from "./newChildTitle";
 
 export {
   getTotalWeight,
@@ -24,4 +25,5 @@ export {
   copyWith,
   plusChildren,
   generateRandomID,
+  newChildTitle,
 };
