@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import type { NodeManager } from "../types";
   import { derived, writable } from "svelte/store";
-  import NodeView from "./NodeView.svelte";
+  import NodeView from "./NodeView";
   import ProgressIndicator from "./ProgressIndicator.svelte";
   import { getTotalWeight, getWeightedProgress } from "../ProgressNode/util";
   import { tweened } from "svelte/motion";
@@ -90,7 +90,7 @@
   <div class="node-view">
     <NodeView
       {defaultConfig}
-      {node}
+      node={$node}
       on:changed={(event) => {
         $progressNode = event.detail;
         $needsSave = true;
@@ -98,7 +98,6 @@
       }}
       canDelete={false}
       headless
-      path={`//${$node.title}`}
     />
   </div>
 </div>
