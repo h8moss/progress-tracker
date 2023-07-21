@@ -22,15 +22,11 @@ Automatically create a TODO list based on the duration of videos in your filesys
 
 ## To-do list
 
-[x] Refactor NodeView
-
-[ ] Increase speed of automatic video weights
-
-[ ] Sorting (And manual moving of items)
-
-[ ] Recently opened
-
-[ ] Command to fold all tasks
+- [x] Refactor NodeView
+- [ ] Increase speed of automatic video weights
+- [ ] Sorting (And manual moving of items)
+- [ ] Recently opened
+- [ ] Command to fold all tasks
 
 ## License
 
