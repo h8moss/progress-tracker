@@ -7,9 +7,10 @@
     ContextMenuItemHandler,
   } from "../types";
   import { globalShortcut } from "@tauri-apps/api";
+  import ContextMenuItems from "../util/ContextMenuItems";
 
-  const MENU_WIDTH = 250;
-  const MENU_ITEM_HEIGHT = 50;
+  const MENU_WIDTH = 200;
+  const MENU_ITEM_HEIGHT = 35;
 
   let x = 0;
   let y = 0;
@@ -32,7 +33,8 @@
   onDestroy(() => document.removeEventListener("mousemove", mouseMoveHandler));
 
   setContext<ContextMenuHandle>("context-menu", {
-    showContextMenu: async (items = [], handler) => {
+    showContextMenu: async (itemsObj = ContextMenuItems.new(), handler) => {
+      const items = itemsObj.items;
       const menuHeight = Math.max(MENU_ITEM_HEIGHT * items.length, 100);
 
       const windowSize = await appWindow.innerSize();
@@ -63,7 +65,8 @@
 
 <slot />
 {#if showMenu}
-  <button
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div
     class="backdrop"
     on:click={() => {
       showMenu = false;
@@ -91,7 +94,7 @@
         >
       {/each}
     </div>
-  </button>
+  </div>
 {/if}
 
 <style>
