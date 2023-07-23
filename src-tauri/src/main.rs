@@ -1,9 +1,10 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use ffprobe::ffprobe;
-use std::fs::{read_to_string, write};
+use std::{fs::{read_to_string, write}, process::Command, os::windows::process::CommandExt};
 use tauri::{CustomMenuItem, Manager, Menu, Submenu};
+use std::str;
+
 
 #[tauri::command]
 async fn write_file(path: String, value: String) -> Result<(), String> {
@@ -23,14 +24,25 @@ fn read_file(path: String) -> String {
     contents
 }
 
+const CREATE_NO_WINDOW: u32 = 0x08000000;
+
 #[tauri::command]
 fn get_video_duration(path: String) -> f32 {
-    let result = match ffprobe(path) {
-        Ok(info) => match info.format.duration {
-            Some(val) => val.parse().unwrap(),
-            None => 0.0,
+    let re = tauri::regex::Regex::new(r"duration=(?<dur>\d+)").unwrap();
+    let mut cmd = Command::new("ffprobe");
+    let command = cmd.args([path.as_str(), "-show_entries", "format=duration", "-v", "0"]);
+
+    command.creation_flags(CREATE_NO_WINDOW);
+
+    let result = match command.output() {
+        Ok(output) => match str::from_utf8(&output.stdout) {
+            Ok(s) => match re.captures(s) {
+                Some(caps) => caps["dur"].parse().unwrap(),
+                None => 0.0,
+            },
+            Err(_) => 0.0,
         },
-        Err(_err) => 0.0,
+        Err(_) => 0.0,
     };
 
     result
