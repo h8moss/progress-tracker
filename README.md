@@ -19,11 +19,12 @@ Each task has a weight assigned to it. A heavier task will advance the progress 
 ### Automatic video weights.
 
 Automatically create a TODO list based on the duration of videos in your filesystem.
+(Must have [ffmpeg](https://ffmpeg.org/download.html) installed and in the PATH)
 
 ## To-do list
 
 - [x] Refactor NodeView
-- [ ] Increase speed of automatic video weights
+- [x] Increase speed of automatic video weights
 - [ ] Sorting (And manual moving of items)
 - [ ] Recently opened
 - [ ] Command to fold all tasks
