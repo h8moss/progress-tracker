@@ -27,6 +27,7 @@ Automatically create a TODO list based on the duration of videos in your filesys
 - [ ] Sorting (And manual moving of items)
 - [ ] Recently opened
 - [ ] Command to fold all tasks
+- [ ] Keyboard shortcuts
 
 ## License
 
