@@ -1,12 +1,12 @@
 @font-face {
   font-family: "Fira Sans";
-  src: url("/fonts/FiraSans-Regular.ttf")format("truetype");
+  src: url("/fonts/FiraSans-Regular.ttf") format("truetype");
 }
 
 :root {
-  --accent: #2F99FC;
+  --accent: #2f99fc;
 
-  font-family: "Fira Sans", 'Times New Roman';
+  font-family: "Fira Sans", "Times New Roman";
 }
 
 html {
@@ -29,7 +29,7 @@ body {
 #app {
   width: 100%;
   height: 100%;
-  
+
   overflow: hidden;
 }
 
@@ -37,6 +37,7 @@ h1 {
   text-align: center;
 }
 
-button , a{
+button,
+a {
   cursor: pointer;
 }
