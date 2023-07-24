@@ -12,9 +12,10 @@ const titleEditStore = (
     canEdit.set(true);
     editableTitle.set(get(title));
   };
+
   const onEditDone = () => {
     canEdit.set(false);
-    onDone(get(title));
+    onDone(get(editableTitle));
   };
 
   const combined = derived([title, canEdit], ([title, canEdit]) => ({
