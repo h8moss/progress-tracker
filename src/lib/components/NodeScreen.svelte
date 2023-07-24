@@ -90,6 +90,8 @@
   <div class="node-view">
     <NodeView
       {defaultConfig}
+      isLast={() => false}
+      isFirst={() => false}
       node={$node}
       on:changed={(event) => {
         $progressNode = event.detail;

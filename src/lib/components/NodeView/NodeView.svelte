@@ -25,14 +25,15 @@
   import weightedProgressStore from "./weightedProgressStore";
   import weightStore from "./weightStore";
   import titleEditStore from "./titleEditStore";
+  import naturalCompare from "natural-compare-lite";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
   export let defaultConfig: Required<NodeConfiguration>;
   export let canDelete = true;
 
-  export let isLast = false;
-  export let isFirst = false;
+  export let isLast: () => boolean;
+  export let isFirst: () => boolean;
 
   type MoveDirections = "UP" | "DOWN" | "TOP" | "BOTTOM";
 
@@ -41,7 +42,7 @@
     move: MoveDirections;
   }>();
 
-  let showChildren = true;
+  let showChildren = false;
 
   const title = titleEditStore(node.title, (title) =>
     dispatch("changed", copyWith(node, { title }))
@@ -52,50 +53,6 @@
   const configurationDialogCtx = getContext<ConfigurationDialogContext>(
     "configuration-dialog"
   );
-
-  const contextMenuItems = ContextMenuItems.new()
-    // Add if it has a head (is not the main view)
-    .addAllIf(
-      [
-        { id: "rename", label: "Rename" },
-        { id: "configuration", label: "Configuration" },
-      ],
-      !headless
-    )
-    // Add if childless
-    .addAllIf(
-      [
-        { id: "toggle-children", label: "Make childful" },
-        { id: "edit-weight", label: "Edit weight" },
-      ],
-      !node.children
-    )
-    // add if childful
-    .addAllIf(
-      [
-        { id: "toggle-children", label: "Make childless" },
-        { id: "toggle-all", label: "Toggle all" },
-        { id: "add-child", label: "New child" },
-        { id: "sort", label: "Sort" },
-      ],
-      !!node.children
-    )
-    .addAllIf(
-      [
-        { id: "shift-top", label: "Move to top" },
-        { id: "shift-up", label: "Move up" },
-      ],
-      !headless && !isFirst
-    )
-    .addAllIf(
-      [
-        { id: "shift-down", label: "Move down" },
-        { id: "shift-bottom", label: "Move to bottom" },
-      ],
-      !headless && !isLast
-    )
-    // add if can delete
-    .addIf({ id: "delete", label: "Delete", color: "red" }, canDelete);
 
   $: if (!isNodeValid(node)) dispatch("changed", makeNodeValid(node));
 
@@ -217,7 +174,16 @@
           }),
         ])
       ),
-    sort: () => {},
+    sort: () => {
+      const copy = structuredClone(node);
+      if (copy.children) {
+        copy.children = copy.children.sort((a, b) =>
+          naturalCompare(a.title, b.title)
+        );
+
+        dispatch("changed", copy);
+      }
+    },
     delete: () => dispatch("changed", null),
     "toggle-all": () => dispatch("changed", setIsDone(node, !getIsDone(node))),
     "edit-weight": () => weight.onStartEditing(),
@@ -242,6 +208,50 @@
   };
 
   const onContextMenu = () => {
+    const contextMenuItems = ContextMenuItems.new()
+      // Add if it has a head (is not the main view)
+      .addAllIf(
+        [
+          { id: "rename", label: "Rename" },
+          { id: "configuration", label: "Configuration" },
+        ],
+        !headless
+      )
+      // Add if childless
+      .addAllIf(
+        [
+          { id: "toggle-children", label: "Make childful" },
+          { id: "edit-weight", label: "Edit weight" },
+        ],
+        !node.children
+      )
+      // add if childful
+      .addAllIf(
+        [
+          { id: "toggle-children", label: "Make childless" },
+          { id: "toggle-all", label: "Toggle all" },
+          { id: "add-child", label: "New child" },
+          { id: "sort", label: "Sort" },
+        ],
+        !!node.children
+      )
+      .addAllIf(
+        [
+          { id: "shift-top", label: "Move to top" },
+          { id: "shift-up", label: "Move up" },
+        ],
+        !headless && !isFirst()
+      )
+      .addAllIf(
+        [
+          { id: "shift-down", label: "Move down" },
+          { id: "shift-bottom", label: "Move to bottom" },
+        ],
+        !headless && !isLast()
+      )
+      // add if can delete
+      .addIf({ id: "delete", label: "Delete", color: "red" }, canDelete);
+
     contextMenuContext.showContextMenu(contextMenuItems, (item) => {
       contextMenuCallbacks[item.id]();
     });
@@ -264,7 +274,10 @@
         {/if}
         {#if $title.canEdit}
           <div class="editing-input" on:click|stopPropagation>
-            <input bind:value={editableTitle} />
+            <input
+              bind:value={$editableTitle}
+              on:submit={() => title.onEditDone()}
+            />
             <button on:click={() => title.onEditDone()}>Ok</button>
           </div>
         {:else}
@@ -281,8 +294,8 @@
 
       {#if $weight.isEditing}
         <div class="weight-editor">
-          <div>
-            <input bind:value={editableWeight} type="number" />
+          <div on:click|stopPropagation>
+            <input bind:value={$editableWeight} type="number" />
             <p>{$weight.editableInterpreted}</p>
           </div>
           <button on:click={weight.onFinishEditing}>Ok</button>
@@ -302,10 +315,10 @@
         {#if node.children.length === 0}
           <p>No sub-tasks yet...</p>
         {/if}
-        {#each node.children as child, index ([child.id, index])}
+        {#each node.children as child, index (child.id)}
           <svelte:self
-            isLast={index === node.children.length - 1}
-            isFirst={index === 0}
+            isLast={() => index === (node.children?.length ?? 0) - 1}
+            isFirst={() => index === 0}
             node={child}
             on:changed={(newChild) => onChildChanged(index, newChild)}
             on:move={(e) => onChildMoved(index, e)}
