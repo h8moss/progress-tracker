@@ -1,14 +1,28 @@
 <script lang="ts">
+  import type { Readable } from "svelte/store";
+  import { onMount } from "svelte";
+  import { cubicInOut } from "svelte/easing";
+  import { tweened } from "svelte/motion";
+
   export let size = 20;
   export let color = "#000000";
-  export let rotation = 0;
+  export let isRotated = false;
+
+  let rotation = tweened(0, {
+    duration: 200,
+    easing: cubicInOut,
+  });
+
+  onMount(() => {});
+
+  $: $rotation = isRotated ? 90 : 0;
 </script>
 
 <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
 <svg
   width="{size}px"
   height="{size}px"
-  style:--rotation="{rotation}deg"
+  style:--rotation="{$rotation}deg"
   viewBox="-4.5 0 20 20"
   version="1.1"
   xmlns="http://www.w3.org/2000/svg"

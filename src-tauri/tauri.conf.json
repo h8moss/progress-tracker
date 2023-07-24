@@ -8,20 +8,20 @@
   },
   "package": {
     "productName": "progress tracker",
-    "version": "1.1.0"
+    "version": "1.1.2"
   },
   "tauri": {
     "cli": {
-      "description": "", 
-        "longDescription": "", 
-        "beforeHelp": "", 
-        "afterHelp": "", 
-        "args": [
-          {
-            "name": "file",
-            "index": 1,
-            "takesValue": true
-          }
+      "description": "",
+      "longDescription": "",
+      "beforeHelp": "",
+      "afterHelp": "",
+      "args": [
+        {
+          "name": "file",
+          "index": 1,
+          "takesValue": true
+        }
       ]
     },
     "allowlist": {

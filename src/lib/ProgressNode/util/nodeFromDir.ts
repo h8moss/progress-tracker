@@ -3,6 +3,7 @@ import { readDir, type FileEntry } from "@tauri-apps/api/fs";
 import generateRandomID from "./generateRandomID";
 import { invoke } from "@tauri-apps/api";
 import { sep } from "@tauri-apps/api/path";
+import naturalCompare from "natural-compare-lite";
 
 const isVideoFile = (path: string) => {
   const extension = path.split(".").at(-1);
@@ -76,7 +77,9 @@ const nodesFromDirs = async (
     }
   }
 
-  return results;
+  return results.sort((a, b) =>
+    naturalCompare(a.title.toLowerCase(), b.title.toLowerCase())
+  );
 };
 
 const nodeFromDir = async (

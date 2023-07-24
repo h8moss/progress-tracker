@@ -2,6 +2,7 @@ import type { Readable } from "svelte/store";
 import type { ProgressNode } from "./ProgressNode";
 import type { WEIGHT_INTERPRETATIONS } from "./ProgressNode/constants";
 import type { NodeConfiguration } from "./ProgressNode/types";
+import type ContextMenuItems from "./util/ContextMenuItems";
 
 /**
  Defines an object that can be represented in a .json file
@@ -43,7 +44,7 @@ export type ContextMenuItemHandler = (
 
 export type ContextMenuHandle = {
   showContextMenu: (
-    items: ContextMenuItem[],
+    items: ContextMenuItems,
     handler: ContextMenuItemHandler
   ) => Promise<void>;
 };
