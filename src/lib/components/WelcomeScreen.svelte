@@ -1,9 +1,6 @@
 <script lang="ts">
-  import { getContext } from "svelte";
-  import type { NodeManager } from "../types";
   import { emit } from "@tauri-apps/api/event";
-
-  const { path, progressNode } = getContext<NodeManager>("nodeManager");
+  import RecentlyUsed from "./RecentlyUsed.svelte";
 
   const onNew = () => {
     emit("new", "");
@@ -37,6 +34,7 @@
     </div>
     <div class="col">
       <h2>Recent</h2>
+      <RecentlyUsed />
     </div>
   </div>
 </div>
