@@ -21,7 +21,7 @@
   } from "../../types";
   import { slide } from "svelte/transition";
   import ArrowRight from "./ArrowRight.svelte";
-  import ContextMenuItems from "../../util/ContextMenuItems";
+  import { ContextMenuItems } from "../../util";
   import weightedProgressStore from "./weightedProgressStore";
   import weightStore from "./weightStore";
   import titleEditStore from "./titleEditStore";

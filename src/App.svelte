@@ -9,7 +9,7 @@
   import NodeScreen from "./lib/components/NodeScreen.svelte";
   import { appWindow } from "@tauri-apps/api/window";
   import type { ProgressNode } from "./lib/ProgressNode";
-  import { appEventListener } from "./lib/util";
+  import { addRecentData, appEventListener } from "./lib/util";
   import ContextMenuHandler from "./lib/components/ContextMenuHandler.svelte";
   import { tweened } from "svelte/motion";
   import { cubicInOut } from "svelte/easing";
@@ -66,6 +66,11 @@
         ($needsSave ? "*" : "") +
         ($path ? ` - ${$path}` : "")
     );
+  }
+
+  $: if ($progressNode && $path) {
+    console.log({ $progressNode, $path });
+    addRecentData({ title: $progressNode.title, path: $path });
   }
 </script>
 
