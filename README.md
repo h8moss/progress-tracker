@@ -24,8 +24,9 @@ Automatically create a TODO list based on the duration of videos in your filesys
 ## To-do list
 
 ### For Version 1.2.0
+
 - [ ] Recently opened
-- [ ] Command to fold all tasks
+- [x] Command to fold all tasks
 - [ ] Keyboard shortcuts
 - [ ] Themes and color labels
 
