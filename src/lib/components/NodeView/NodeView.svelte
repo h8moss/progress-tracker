@@ -1,5 +1,10 @@
 <script lang="ts">
-  import { createEventDispatcher, getContext } from "svelte";
+  import {
+    createEventDispatcher,
+    getContext,
+    onDestroy,
+    onMount,
+  } from "svelte";
   import ProgressIndicator from "../ProgressIndicator.svelte";
   import { cubicInOut } from "svelte/easing";
   import type { ProgressNode } from "../../ProgressNode";
@@ -26,6 +31,7 @@
   import weightStore from "./weightStore";
   import titleEditStore from "./titleEditStore";
   import naturalCompare from "natural-compare-lite";
+  import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
@@ -42,7 +48,20 @@
     move: MoveDirections;
   }>();
 
+  let unsubFoldAll: UnlistenFn | null;
+  let unsubUnfoldAll: UnlistenFn | null;
+
   let showChildren = false;
+
+  onMount(async () => {
+    unsubFoldAll = await listen("fold-all", (_) => (showChildren = false));
+    unsubUnfoldAll = await listen("unfold-all", (_) => (showChildren = true));
+  });
+
+  onDestroy(() => {
+    if (unsubFoldAll) unsubFoldAll();
+    if (unsubUnfoldAll) unsubUnfoldAll();
+  });
 
   const title = titleEditStore(node.title, (title) =>
     dispatch("changed", copyWith(node, { title }))

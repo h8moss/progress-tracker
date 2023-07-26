@@ -62,8 +62,19 @@ fn main() {
             .add_item(CustomMenuItem::new("save-as".to_string(), "Save as"))
             .add_item(CustomMenuItem::new("quit".to_string(), "Quit")),
     );
+    let view_submenu = Submenu::new("View",
+        Menu::new()
+            .add_item(CustomMenuItem::new(
+                "fold-all".to_string(),
+                 "Fold all"
+            ))
+            .add_item(CustomMenuItem::new(
+                "unfold-all".to_string(), 
+                "Unfold all"
+            ))
+    );
 
-    let menu = Menu::new().add_submenu(file_submenu);
+    let menu = Menu::new().add_submenu(file_submenu).add_submenu(view_submenu);
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -99,6 +110,12 @@ fn main() {
             }
             "quit" => {
                 event.window().emit("quit", 0).expect("Error emitting quit");
+            }
+            "fold-all" => {
+                event.window().emit("fold-all", 0).expect("Error emitting fold-all")
+            }
+            "unfold-all" => {
+                event.window().emit("unfold-all", 0).expect("Error emitting unfold-all")
             }
 
             _ => {}
