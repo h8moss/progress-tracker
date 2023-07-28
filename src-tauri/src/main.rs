@@ -52,15 +52,15 @@ fn main() {
     let file_submenu = Submenu::new(
         "File",
         Menu::new()
-            .add_item(CustomMenuItem::new("new".to_string(), "New"))
+            .add_item(CustomMenuItem::new("new".to_string(), "New (Ctrl+N)"))
             .add_item(CustomMenuItem::new(
                 "new-folder".to_string(),
                 "New from folder",
             ))
-            .add_item(CustomMenuItem::new("open".to_string(), "Open"))
-            .add_item(CustomMenuItem::new("save".to_string(), "Save"))
+            .add_item(CustomMenuItem::new("open".to_string(), "Open (Ctrl+O)"))
+            .add_item(CustomMenuItem::new("save".to_string(), "Save (Ctrl+S)"))
             .add_item(CustomMenuItem::new("save-as".to_string(), "Save as"))
-            .add_item(CustomMenuItem::new("quit".to_string(), "Quit")),
+            .add_item(CustomMenuItem::new("quit".to_string(), "Quit (Ctrl+Q)")),
     );
     let view_submenu = Submenu::new("View",
         Menu::new()
