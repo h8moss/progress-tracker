@@ -31,7 +31,7 @@
       </button>
     {/each}
     {#if recent.length === 0}
-      <p>No recent Items</p>
+      <p class="no-items">No recent Items</p>
     {/if}
   {/await}
 </div>
@@ -59,6 +59,10 @@
     text-align: left;
     margin: 0px;
     font-size: 1rem;
+  }
+
+  .no-items {
+    text-align: center;
   }
 
   p.path {
