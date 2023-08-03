@@ -7,7 +7,7 @@ interface Params {
 
 const addRecentData = async ({ title, path }: Params) => {
   const currentDataStr = (await invoke("read_file", {
-    path: "./recent.json",
+    path: "./data/recent.json",
   })) as string;
   const currentDataJSON = JSON.parse((currentDataStr as string) || "[]");
 
@@ -28,10 +28,9 @@ const addRecentData = async ({ title, path }: Params) => {
 
   newData = [...newData, { title, path }];
   await invoke("write_file", {
-    path: "./recent.json",
+    path: "./data/recent.json",
     value: JSON.stringify(newData),
   });
-  console.log("DONE");
 };
 
 export default addRecentData;

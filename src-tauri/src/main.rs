@@ -1,10 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{fs::{read_to_string, write}, process::Command, os::windows::process::CommandExt};
+use std::{fs::{read_to_string, write, create_dir}, process::Command, os::windows::process::CommandExt, path::Path};
 use tauri::{CustomMenuItem, Manager, Menu, Submenu};
 use std::str;
-
 
 #[tauri::command]
 async fn write_file(path: String, value: String) -> Result<(), String> {
@@ -23,6 +22,22 @@ fn read_file(path: String) -> String {
 
     contents
 }
+
+#[tauri::command]
+fn create_data_folder() -> Result<(), &'static str> {
+    let path = Path::new("./data");
+    if !path.exists() {
+        let result = match create_dir(path) {
+            Ok(_) => Ok(()),
+            Err(_) => Err("Error creating data folder"),
+        };
+
+        return result;
+    }
+
+    Ok(())
+}
+
 
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
@@ -80,7 +95,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_video_duration,
             read_file,
-            write_file
+            write_file,
+            create_data_folder
         ])
         .menu(menu)
         .on_menu_event(|event| match event.menu_item_id() {
