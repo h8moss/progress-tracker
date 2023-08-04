@@ -9,6 +9,8 @@
 
   $: trueProgress = 100 - progress;
 
+  // A random uuid for the ids of the linear gradients and masks
+  // This way if we create multiple SVGs, they don't share the same mask.
   const rand = v4();
 </script>
 
