@@ -11,6 +11,9 @@ import copyWith from "./copyWith";
 import plusChildren from "./plusChildren";
 import generateRandomID from "./generateRandomID";
 import newChildTitle from "./newChildTitle";
+import getNodeLabels from "./getNodeLabels";
+import getChildrenLabels from "./getChildrenLabels";
+import getUndoneLabels from "./getUndoneLabels";
 
 export {
   getTotalWeight,
@@ -26,4 +29,7 @@ export {
   plusChildren,
   generateRandomID,
   newChildTitle,
+  getNodeLabels,
+  getChildrenLabels,
+  getUndoneLabels,
 };
