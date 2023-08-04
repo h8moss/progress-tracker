@@ -30,7 +30,7 @@
 
 <dialog bind:this={dialog}>
   <form method="dialog">
-    <div>
+    <div class="content">
       <label for="weight-interpretation"
         >Weight interpretation:
         <select
@@ -54,6 +54,20 @@
           </select>
         {/await}
       </label>
+      <label for="label-color">
+        Label: <select
+          name="label-color"
+          class="label-color-select"
+          bind:value={currentValues.colorLabel}
+        >
+          <option value="transparent"> None</option>
+          <option value="#5555ff"> Blue</option>
+          <option value="#ff2222"> Red</option>
+          <option value="#ffff00"> Yellow</option>
+          <option value="#ff8800"> Orange</option>
+          <option value="#9900ff"> Purple</option>
+        </select>
+      </label>
     </div>
 
     <div class="buttons">
@@ -74,7 +88,11 @@
 <slot />
 
 <style>
-  div {
+  select.label-color-select option {
+    display: flex;
+  }
+
+  div.content {
     display: flex;
     flex-direction: column;
   }
