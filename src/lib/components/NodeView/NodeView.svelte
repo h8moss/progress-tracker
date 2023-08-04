@@ -18,13 +18,15 @@
     newChildTitle,
     plusChildren,
     setIsDone,
+    getChildrenLabels,
+    getUndoneLabels,
   } from "../../ProgressNode/util";
   import type { NodeConfiguration } from "../../ProgressNode/types";
   import type {
     ConfigurationDialogContext,
     ContextMenuHandle,
   } from "../../types";
-  import { slide } from "svelte/transition";
+  import { slide, scale } from "svelte/transition";
   import ArrowRight from "./ArrowRight.svelte";
   import { ContextMenuItems } from "../../util";
   import weightedProgressStore from "./weightedProgressStore";
@@ -207,7 +209,8 @@
     delete: () => dispatch("changed", null),
     "toggle-all": () => dispatch("changed", setIsDone(node, !getIsDone(node))),
     "edit-weight": () => weight.onStartEditing(),
-    configuration: () =>
+    configuration: () => {
+      console.log({ nodeConfiguration: node.configuration });
       configurationDialogCtx.open(
         {
           ...defaultConfig,
@@ -220,7 +223,8 @@
               configuration: value,
             })
           )
-      ),
+      );
+    },
     "shift-up": () => dispatch("move", "UP"),
     "shift-top": () => dispatch("move", "TOP"),
     "shift-down": () => dispatch("move", "DOWN"),
@@ -292,7 +296,9 @@
     style:--text-color-b={configuration.theme.textColorB}
     style:--accent={configuration.theme.highlightColorA}
     style:--accent-b={configuration.theme.highlightColorB}
+    style:--label-color={node.configuration?.colorLabel || "transparent"}
   >
+    {(console.log({ config: node.configuration, name: node.title }), "")}
     <div
       class="content"
       on:click|stopPropagation={onClick}
@@ -306,21 +312,32 @@
               stopColorA={configuration.theme.highlightColorA}
               stopColorB={configuration.theme.highlightColorB}
             />
-            {(console.log({ configuration }), "")}
           {:else}
             <ArrowRight isRotated={showChildren} />
           {/if}
-          {#if $title.canEdit}
-            <div class="editing-input" on:click|stopPropagation>
-              <input
-                bind:value={$editableTitle}
-                on:submit={() => title.onEditDone()}
-              />
-              <button on:click={() => title.onEditDone()}>Ok</button>
+          <div class="title-text">
+            <div class="label" />
+            {#if $title.canEdit}
+              <div class="editing-input" on:click|stopPropagation>
+                <input
+                  bind:value={$editableTitle}
+                  on:submit={() => title.onEditDone()}
+                />
+                <button on:click={() => title.onEditDone()}>Ok</button>
+              </div>
+            {:else}
+              <p>{node.title}</p>
+            {/if}
+            <div class="child-labels">
+              {#each getChildrenLabels(node, getUndoneLabels) as labelColor (labelColor)}
+                <div
+                  class="short-label"
+                  style:background-color={labelColor}
+                  transition:scale
+                />
+              {/each}
             </div>
-          {:else}
-            <p>{node.title}</p>
-          {/if}
+          </div>
         </div>
         <ProgressIndicator
           progress={$progress.progress}
@@ -390,6 +407,26 @@
     transition: background 200ms cubic-bezier(0.19, 1, 0.22, 1);
 
     color: var(--text-color);
+
+    border-left: 1px solid var(--label-color, transparent);
+  }
+
+  div.child-labels {
+    display: flex;
+  }
+
+  .label {
+    width: 50px;
+    height: 10px;
+    border-radius: 2rem;
+    background-color: var(--label-color, transparent);
+  }
+
+  .short-label {
+    width: 10px;
+    height: 10px;
+    border-radius: 2rem;
+    margin-right: 0.25rem;
   }
 
   .content:hover {
