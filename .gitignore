@@ -23,4 +23,4 @@ dist-ssr
 *.sln
 *.sw?
 
-**/recent.json
+src-tauri/data/

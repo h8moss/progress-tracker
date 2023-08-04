@@ -6,8 +6,20 @@
 
 import type { WeightInterpretation } from "../types";
 
+export type NodeTheme = {
+  name: string;
+  textColor: string;
+  textColorB: string;
+  backgroundColor: string;
+  darkenColor: number[];
+  highlightColorA: string;
+  highlightColorB: string;
+};
+
 export type NodeConfiguration = {
   weightInterpretation?: WeightInterpretation;
+  colorLabel?: string;
+  theme?: NodeTheme;
 };
 
 export type ProgressNode = {

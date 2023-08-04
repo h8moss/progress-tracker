@@ -17,12 +17,13 @@
   div.sticky {
     position: sticky;
     top: 0.5rem;
-    --bg: white;
+    --bg: var(--bg-color, white);
   }
   div {
     background: linear-gradient(
       to right,
-      var(--accent) var(--percent),
+      var(--accent) 0,
+      var(--accent-b) var(--percent),
       var(--bg, transparent) var(--percent)
     );
     min-width: 150px;
@@ -32,8 +33,8 @@
     display: flex;
     justify-content: center;
     border-radius: 1rem;
-    color: #2222aa;
-    border: 2px solid #2222aa;
+    color: var(--text-color-b, black);
+    border: 2px solid var(--text-color-b, black);
   }
 
   p {

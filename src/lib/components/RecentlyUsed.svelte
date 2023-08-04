@@ -9,10 +9,12 @@
   $: path = nodeManager.path;
   $: progressNode = nodeManager.progressNode;
 
-  let recent = invoke("read_file", { path: "./recent.json" }).then((value) => {
-    console.log({ value });
-    return JSON.parse((value as string) || "[]");
-  });
+  let recent = invoke("read_file", { path: "./data/recent.json" }).then(
+    (value) => {
+      console.log({ value });
+      return JSON.parse((value as string) || "[]");
+    }
+  );
 </script>
 
 <div>

@@ -1,10 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{fs::{read_to_string, write}, process::Command, os::windows::process::CommandExt};
+use std::{fs::{read_to_string, write, read_dir, create_dir}, process::Command, os::windows::process::CommandExt, path::Path};
 use tauri::{CustomMenuItem, Manager, Menu, Submenu};
 use std::str;
-
 
 #[tauri::command]
 async fn write_file(path: String, value: String) -> Result<(), String> {
@@ -22,6 +21,76 @@ fn read_file(path: String) -> String {
     };
 
     contents
+}
+
+#[tauri::command]
+fn create_data_folder() -> Result<(), &'static str> {
+    let path = Path::new("./data");
+    if !path.exists() {
+        let result = match create_dir(path) {
+            Ok(_) => Ok(()),
+            Err(_) => Err("Error creating data folder"),
+        };
+
+        return result;
+    }
+
+    Ok(())
+}
+
+fn get_entries(path: &Path) -> Result<Vec<String>, &str> {
+    let mut result: Vec<String> = Vec::new();
+    if path.is_dir() {
+        if !path.exists() {
+            match create_dir(path) {
+                Ok(()) => {},
+                Err(_) => {
+                    return Err("Something went wrong");
+                }
+            }
+        }
+        let entries = match read_dir(path) {
+            Ok(v) => v,
+            Err(_) => {
+                return Err("Something went wrong")
+            }
+        };
+        for entry in entries {
+            let entry = match entry {
+                Ok(v) => v,
+                Err(_) => {
+                    return Err("Something went wrong")
+                },
+            };
+            let path = entry.path();
+            if path.is_file() {
+                let contents = match read_to_string(path) {
+                    Ok(v) => v,
+                    Err(_) => {
+                        return Err("Something went wrong")
+                    }
+                };
+
+                result.push(contents);
+            }
+        }
+    }
+
+    Ok(result)
+}
+
+#[tauri::command]
+fn read_folder(path: String) -> Vec<String> {
+    let path = Path::new(&path);
+
+    
+
+    let entries = match get_entries(path) {
+        Ok(v) => v,
+        Err(_) => Vec::new(),
+    };
+
+    entries
 }
 
 const CREATE_NO_WINDOW: u32 = 0x08000000;
@@ -80,7 +149,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_video_duration,
             read_file,
-            write_file
+            write_file,
+            read_folder,
+            create_data_folder
         ])
         .menu(menu)
         .on_menu_event(|event| match event.menu_item_id() {

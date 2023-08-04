@@ -13,7 +13,7 @@
 
     console.log({ key, ctrl, alt, shift });
 
-    if (ctrl || alt || shift) {
+    if (ctrl || alt) {
       e.preventDefault();
 
       dispatch(key.toUpperCase(), { ctrl, alt, shift });

@@ -10,6 +10,7 @@
   import type { NodeConfiguration } from "../ProgressNode/types";
   import SettingsIcon from "./SettingsIcon.svelte";
   import type { ConfigurationDialogContext } from "../types";
+  import { DEFAULT_THEME } from "../ProgressNode/constants";
 
   const { needsSave, progressNode } = getContext<NodeManager>("nodeManager");
 
@@ -17,6 +18,8 @@
 
   const defaultConfig: Required<NodeConfiguration> = {
     weightInterpretation: "none",
+    colorLabel: "transparent",
+    theme: DEFAULT_THEME,
   };
 
   const initialTitle = $node.title;
@@ -48,9 +51,23 @@
   $: if ($node.title !== initialTitle) $needsSave = true;
 
   $: console.log({ $node });
+
+  $: configuration = {
+    ...defaultConfig,
+    ...($progressNode?.configuration || {}),
+  };
 </script>
 
-<div class="main">
+<div
+  class="main"
+  style:--bg-color={configuration.theme.backgroundColor}
+  style:--text-color={configuration.theme.textColor}
+  style:--darken-color="{configuration.theme.darkenColor[0]}, {defaultConfig
+    .theme.darkenColor[1]}, {configuration.theme.darkenColor[2]}"
+  style:--text-color-b={configuration.theme.textColorB}
+  style:--accent={configuration.theme.highlightColorA}
+  style:--accent-b={configuration.theme.highlightColorB}
+>
   <div
     class="title-div"
     on:mouseenter={() => (isTitleHovered = true)}
@@ -113,6 +130,9 @@
     height: 100%;
 
     padding: 1rem;
+
+    background-color: var(--bg-color, #fff);
+    color: var(--text-color, #000);
   }
 
   .node-view {
