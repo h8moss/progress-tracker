@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api";
+import { appDataDir, join } from "@tauri-apps/api/path";
 
 interface Params {
   title: string;
@@ -6,8 +7,10 @@ interface Params {
 }
 
 const addRecentData = async ({ title, path }: Params) => {
+  const dataDir = await appDataDir();
+  const joinedPath = await join(dataDir, "\\recent.json");
   const currentDataStr = (await invoke("read_file", {
-    path: "./data/recent.json",
+    path: joinedPath,
   })) as string;
   const currentDataJSON = JSON.parse((currentDataStr as string) || "[]");
 
@@ -28,7 +31,7 @@ const addRecentData = async ({ title, path }: Params) => {
 
   newData = [...newData, { title, path }];
   await invoke("write_file", {
-    path: "./data/recent.json",
+    path: dataDir + "\\recent.json",
     value: JSON.stringify(newData),
   });
 };

@@ -16,7 +16,6 @@
   import ConfigurationDialog from "./lib/components/ConfigurationDialog.svelte";
   import ShortcutListener from "./lib/components/ShortcutListener.svelte";
   import { emit } from "@tauri-apps/api/event";
-  import { invoke } from "@tauri-apps/api/tauri";
 
   const isLoading = tweened<number | null>(50, {
     duration: 200,
@@ -38,9 +37,6 @@
   let unlisten: (() => void) | null = null;
 
   onMount(async () => {
-    const res = await invoke("create_data_folder");
-    console.log({ res });
-
     const matches = await getMatches();
     if (matches.args.file.value) {
       $isLoading = 25;
