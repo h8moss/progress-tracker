@@ -28,7 +28,7 @@ Automatically create a TODO list based on the duration of videos in your filesys
 - [x] Recently opened
 - [x] Command to fold all tasks
 - [x] Keyboard shortcuts
-- [ ] Themes and color labels
+- [x] Themes and color labels
 
 ## License
 
