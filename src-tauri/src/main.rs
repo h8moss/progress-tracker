@@ -23,21 +23,6 @@ fn read_file(path: String) -> String {
     contents
 }
 
-#[tauri::command]
-fn create_data_folder() -> Result<(), &'static str> {
-    let path = Path::new("./data");
-    if !path.exists() {
-        let result = match create_dir(path) {
-            Ok(_) => Ok(()),
-            Err(_) => Err("Error creating data folder"),
-        };
-
-        return result;
-    }
-
-    Ok(())
-}
-
 fn get_entries(path: &Path) -> Result<Vec<String>, &str> {
     let mut result: Vec<String> = Vec::new();
     if path.is_dir() {
@@ -70,7 +55,6 @@ fn get_entries(path: &Path) -> Result<Vec<String>, &str> {
                         return Err("Something went wrong")
                     }
                 };
-
                 result.push(contents);
             }
         }
@@ -151,7 +135,6 @@ fn main() {
             read_file,
             write_file,
             read_folder,
-            create_data_folder
         ])
         .menu(menu)
         .on_menu_event(|event| match event.menu_item_id() {
@@ -203,7 +186,16 @@ fn main() {
                 });
             });
 
-            Ok(())
+            match app.path_resolver().app_data_dir() {
+                Some(data_dir) => {
+                    if !data_dir.exists() {
+                        let _ =  create_dir(data_dir);
+                    }
+                },
+                None => {}
+            };
+
+        Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

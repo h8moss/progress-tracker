@@ -3,17 +3,19 @@
   import { nodeFromJsonPath } from "../ProgressNode/util";
   import { getContext } from "svelte";
   import type { NodeManager } from "../types";
+  import { appDataDir, join } from "@tauri-apps/api/path";
 
   const nodeManager = getContext<NodeManager>("nodeManager");
 
   $: path = nodeManager.path;
   $: progressNode = nodeManager.progressNode;
 
-  let recent = invoke("read_file", { path: "./data/recent.json" }).then(
-    (value) => {
-      console.log({ value });
-      return JSON.parse((value as string) || "[]");
-    }
+  let recent = appDataDir().then((dataDir) =>
+    join(dataDir, "\\recent.json").then((path) =>
+      invoke("read_file", { path }).then((value) => {
+        return JSON.parse((value as string) || "[]");
+      })
+    )
   );
 </script>
 
