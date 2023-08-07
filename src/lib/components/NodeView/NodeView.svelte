@@ -1,5 +1,10 @@
 <script lang="ts">
-  import { createEventDispatcher, getContext } from "svelte";
+  import {
+    createEventDispatcher,
+    getContext,
+    onDestroy,
+    onMount,
+  } from "svelte";
   import ProgressIndicator from "../ProgressIndicator.svelte";
   import { cubicInOut } from "svelte/easing";
   import type { ProgressNode } from "../../ProgressNode";
@@ -13,19 +18,23 @@
     newChildTitle,
     plusChildren,
     setIsDone,
+    getChildrenLabels,
+    getUndoneLabels,
   } from "../../ProgressNode/util";
   import type { NodeConfiguration } from "../../ProgressNode/types";
   import type {
     ConfigurationDialogContext,
     ContextMenuHandle,
   } from "../../types";
-  import { slide } from "svelte/transition";
+  import { slide, scale } from "svelte/transition";
   import ArrowRight from "./ArrowRight.svelte";
-  import ContextMenuItems from "../../util/ContextMenuItems";
+  import { ContextMenuItems } from "../../util";
   import weightedProgressStore from "./weightedProgressStore";
   import weightStore from "./weightStore";
   import titleEditStore from "./titleEditStore";
   import naturalCompare from "natural-compare-lite";
+  import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+  import CustomCheckbox from "../CustomCheckbox.svelte";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
@@ -42,7 +51,20 @@
     move: MoveDirections;
   }>();
 
+  let unsubFoldAll: UnlistenFn | null;
+  let unsubUnfoldAll: UnlistenFn | null;
+
   let showChildren = false;
+
+  onMount(async () => {
+    unsubFoldAll = await listen("fold-all", (_) => (showChildren = false));
+    unsubUnfoldAll = await listen("unfold-all", (_) => (showChildren = true));
+  });
+
+  onDestroy(() => {
+    if (unsubFoldAll) unsubFoldAll();
+    if (unsubUnfoldAll) unsubUnfoldAll();
+  });
 
   const title = titleEditStore(node.title, (title) =>
     dispatch("changed", copyWith(node, { title }))
@@ -187,7 +209,8 @@
     delete: () => dispatch("changed", null),
     "toggle-all": () => dispatch("changed", setIsDone(node, !getIsDone(node))),
     "edit-weight": () => weight.onStartEditing(),
-    configuration: () =>
+    configuration: () => {
+      console.log({ nodeConfiguration: node.configuration });
       configurationDialogCtx.open(
         {
           ...defaultConfig,
@@ -200,7 +223,8 @@
               configuration: value,
             })
           )
-      ),
+      );
+    },
     "shift-up": () => dispatch("move", "UP"),
     "shift-top": () => dispatch("move", "TOP"),
     "shift-down": () => dispatch("move", "DOWN"),
@@ -261,88 +285,148 @@
 {#if node}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
-    class="content"
-    on:click|stopPropagation={onClick}
-    on:contextmenu|preventDefault|stopPropagation={onContextMenu}
+    class="parent"
+    style:--bg-color={defaultConfig.theme.backgroundColor !==
+    configuration.theme.backgroundColor
+      ? configuration.theme.backgroundColor
+      : "transparent"}
+    style:--text-color={configuration.theme.textColor}
+    style:--darken-color="{configuration.theme.darkenColor[0]}, {configuration
+      .theme.darkenColor[1]}, {configuration.theme.darkenColor[2]}"
+    style:--text-color-b={configuration.theme.textColorB}
+    style:--accent={configuration.theme.highlightColorA}
+    style:--accent-b={configuration.theme.highlightColorB}
+    style:--label-color={node.configuration?.colorLabel || "transparent"}
   >
-    <div class="head" class:headless>
-      <div class="title">
-        {#if node.isDone !== undefined}
-          <input type="checkbox" bind:checked={node.isDone} />
-        {:else}
-          <ArrowRight isRotated={showChildren} />
-        {/if}
-        {#if $title.canEdit}
-          <div class="editing-input" on:click|stopPropagation>
-            <input
-              bind:value={$editableTitle}
-              on:submit={() => title.onEditDone()}
+    {(console.log({ config: node.configuration, name: node.title }), "")}
+    <div
+      class="content"
+      on:click|stopPropagation={onClick}
+      on:contextmenu|preventDefault|stopPropagation={onContextMenu}
+    >
+      <div class="head" class:headless>
+        <div class="title">
+          {#if node.isDone !== undefined}
+            <CustomCheckbox
+              checked={node.isDone}
+              stopColorA={configuration.theme.highlightColorA}
+              stopColorB={configuration.theme.highlightColorB}
             />
-            <button on:click={() => title.onEditDone()}>Ok</button>
+          {:else}
+            <ArrowRight isRotated={showChildren} />
+          {/if}
+          <div class="title-text">
+            <div class="label" />
+            {#if $title.canEdit}
+              <div class="editing-input" on:click|stopPropagation>
+                <input
+                  bind:value={$editableTitle}
+                  on:submit={() => title.onEditDone()}
+                />
+                <button on:click={() => title.onEditDone()}>Ok</button>
+              </div>
+            {:else}
+              <p>{node.title}</p>
+            {/if}
+            <div class="child-labels">
+              {#each getChildrenLabels(node, getUndoneLabels) as labelColor (labelColor)}
+                <div
+                  class="short-label"
+                  style:background-color={labelColor}
+                  transition:scale
+                />
+              {/each}
+            </div>
+          </div>
+        </div>
+        <ProgressIndicator
+          progress={$progress.progress}
+          maximum={getTotalWeight(node)}
+        />
+      </div>
+      <div class="weights">
+        <p>{$progress.interpretation}</p>
+
+        {#if $weight.isEditing}
+          <div class="weight-editor">
+            <div on:click|stopPropagation>
+              <input bind:value={$editableWeight} type="number" />
+              <p>{$weight.editableInterpreted}</p>
+            </div>
+            <button on:click={weight.onFinishEditing}>Ok</button>
           </div>
         {:else}
-          <p>{node.title}</p>
+          <p>{$weight.interpreted}</p>
         {/if}
       </div>
-      <ProgressIndicator
-        progress={$progress.progress}
-        maximum={getTotalWeight(node)}
-      />
-    </div>
-    <div class="weights">
-      <p>{$progress.interpretation}</p>
-
-      {#if $weight.isEditing}
-        <div class="weight-editor">
-          <div on:click|stopPropagation>
-            <input bind:value={$editableWeight} type="number" />
-            <p>{$weight.editableInterpreted}</p>
-          </div>
-          <button on:click={weight.onFinishEditing}>Ok</button>
+      {#if node.children && (showChildren || headless)}
+        <div
+          class="children"
+          transition:slide={{
+            duration: 200,
+            easing: cubicInOut,
+          }}
+        >
+          {#if node.children.length === 0}
+            <p>No sub-tasks yet...</p>
+          {/if}
+          {#each node.children as child, index (child.id)}
+            <svelte:self
+              isLast={() => index === (node.children?.length ?? 0) - 1}
+              isFirst={() => index === 0}
+              node={child}
+              on:changed={(newChild) => onChildChanged(index, newChild)}
+              on:move={(e) => onChildMoved(index, e)}
+              defaultConfig={configuration}
+            />
+          {/each}
         </div>
-      {:else}
-        <p>{$weight.interpreted}</p>
       {/if}
     </div>
-    {#if node.children && (showChildren || headless)}
-      <div
-        class="children"
-        transition:slide={{
-          duration: 200,
-          easing: cubicInOut,
-        }}
-      >
-        {#if node.children.length === 0}
-          <p>No sub-tasks yet...</p>
-        {/if}
-        {#each node.children as child, index (child.id)}
-          <svelte:self
-            isLast={() => index === (node.children?.length ?? 0) - 1}
-            isFirst={() => index === 0}
-            node={child}
-            on:changed={(newChild) => onChildChanged(index, newChild)}
-            on:move={(e) => onChildMoved(index, e)}
-            defaultConfig={configuration}
-          />
-        {/each}
-      </div>
-    {/if}
   </div>
 {/if}
 
 <style>
+  .parent {
+    background-color: var(--bg-color, transparent);
+  }
   .content {
     --background-color-opacity: 0;
 
     display: flex;
     flex-direction: column;
 
-    background-color: rgba(0, 0, 0, var(--background-color-opacity));
+    background-color: rgba(
+      var(--darken-color),
+      var(--background-color-opacity)
+    );
     padding: 0.5rem;
     margin: 0.25rem;
     border-radius: 0.25rem;
 
     transition: background 200ms cubic-bezier(0.19, 1, 0.22, 1);
+
+    color: var(--text-color);
+
+    border-left: 1px solid var(--label-color, transparent);
+  }
+
+  div.child-labels {
+    display: flex;
+  }
+
+  .label {
+    width: 50px;
+    height: 10px;
+    border-radius: 2rem;
+    background-color: var(--label-color, transparent);
+  }
+
+  .short-label {
+    width: 10px;
+    height: 10px;
+    border-radius: 2rem;
+    margin-right: 0.25rem;
   }
 
   .content:hover {
@@ -367,7 +451,7 @@
     justify-content: space-between;
 
     font-size: 0.75rem;
-    border-bottom: rgba(0, 0, 0, 0.7) 1px solid;
+    border-bottom: var(--text-color, black) 1px solid;
   }
 
   .weights > p {

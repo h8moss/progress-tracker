@@ -21,15 +21,24 @@ Each task has a weight assigned to it. A heavier task will advance the progress 
 Automatically create a TODO list based on the duration of videos in your filesystem.
 (Must have [ffmpeg](https://ffmpeg.org/download.html) installed and in the PATH)
 
-## To-do list
+### Custom themes
 
-- [x] Refactor NodeView
-- [x] Increase speed of automatic video weights
-- [x] Sorting (And manual moving of items)
-- [ ] Recently opened
-- [ ] Command to fold all tasks
-- [ ] Keyboard shortcuts
-- [ ] Themes and color labels
+#### Defining custom themes
+
+To create a custom theme, navigate to AppData/Roaming and locate a folder called
+`com.h8m0ss.progress-tracker/themes`. If it does not exist, create it.
+There create a new JSON file for each of the themes you want to create.
+Each JSON file must contain:
+
+- "name": A string with the display name of the theme
+- "textColor": a string with the hex value of the text color (#000000).
+- "textColorB": A hex-string for the color of the text inside progress bars.
+- "backgroundColor": A hex-string for the background color.
+- "darkenColor": An array with 3 numbers, each representing a value from 0 to 255 for the darkening color (the color of a task when hovered),
+- "highlightColorA": A hex-string for the first color of the progress bars' gradient.
+- "highlightColorB": A hex-string for the second color of the progress bars' gradient
+
+[Here you can find the values for the default themes](https://github.com/h8moss/progress-tracker/blob/main/src/lib/ProgressNode/constants.ts)
 
 ## License
 

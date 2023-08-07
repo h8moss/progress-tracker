@@ -4,7 +4,6 @@
 </script>
 
 <svg
-  fill="#000000"
   width="{size}px"
   height="{size}px"
   style:--opacity={opacity}
@@ -23,6 +22,7 @@
 
 <style>
   svg {
+    fill: var(--text-color, black);
     margin: auto 0px;
     opacity: var(--opacity);
 

@@ -9,11 +9,13 @@
   import NodeScreen from "./lib/components/NodeScreen.svelte";
   import { appWindow } from "@tauri-apps/api/window";
   import type { ProgressNode } from "./lib/ProgressNode";
-  import { appEventListener } from "./lib/util";
+  import { addRecentData, appEventListener } from "./lib/util";
   import ContextMenuHandler from "./lib/components/ContextMenuHandler.svelte";
   import { tweened } from "svelte/motion";
   import { cubicInOut } from "svelte/easing";
   import ConfigurationDialog from "./lib/components/ConfigurationDialog.svelte";
+  import ShortcutListener from "./lib/components/ShortcutListener.svelte";
+  import { emit } from "@tauri-apps/api/event";
 
   const isLoading = tweened<number | null>(50, {
     duration: 200,
@@ -67,16 +69,39 @@
         ($path ? ` - ${$path}` : "")
     );
   }
+
+  $: if ($progressNode && $path) {
+    console.log({ $progressNode, $path });
+    addRecentData({ title: $progressNode.title, path: $path });
+  }
 </script>
 
-<ConfigurationDialog>
-  <ContextMenuHandler>
-    {#if $isLoading !== null}
-      <LoadingScreen progress={$isLoading} showLabel />
-    {:else if $progressNode}
-      <NodeScreen />
-    {:else}
-      <WelcomeScreen />
-    {/if}
-  </ContextMenuHandler>
-</ConfigurationDialog>
+<ShortcutListener
+  on:N={({ detail: { ctrl } }) => {
+    if (ctrl) emit("new", 0);
+  }}
+  on:O={({ detail: { ctrl } }) => {
+    if (ctrl) emit("open", 0);
+  }}
+  on:S={({ detail: { ctrl } }) => {
+    if (ctrl) emit("get-save-path", 0);
+  }}
+  on:Q={({ detail: { ctrl } }) => {
+    if (ctrl) emit("quit", 0);
+  }}
+  on:W={({ detail: { ctrl } }) => {
+    if (ctrl) emit("quit", 0);
+  }}
+>
+  <ConfigurationDialog>
+    <ContextMenuHandler>
+      {#if $isLoading !== null}
+        <LoadingScreen progress={$isLoading} showLabel />
+      {:else if $progressNode}
+        <NodeScreen />
+      {:else}
+        <WelcomeScreen />
+      {/if}
+    </ContextMenuHandler>
+  </ConfigurationDialog>
+</ShortcutListener>

@@ -1,5 +1,5 @@
 import { emit, listen, type Event } from "@tauri-apps/api/event";
-import { get, type Readable, type Writable } from "svelte/store";
+import { get, type Writable } from "svelte/store";
 import type { ProgressNode } from "../ProgressNode";
 import { open, save } from "@tauri-apps/api/dialog";
 import {
