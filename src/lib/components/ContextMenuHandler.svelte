@@ -7,7 +7,7 @@
     ContextMenuItemHandler,
   } from "../types";
   import { globalShortcut } from "@tauri-apps/api";
-  import ContextMenuItems from "../util/ContextMenuItems";
+  import { ContextMenuItems } from "../util";
 
   const MENU_WIDTH = 200;
   const MENU_ITEM_HEIGHT = 35;

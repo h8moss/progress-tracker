@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import { writable } from "svelte/store";
+  import LogoSvg from "./LogoSVG.svelte";
+  import { DEFAULT_THEME } from "../ProgressNode/constants";
 
   /** Number from 0 to 100 describing the percentage of advancement */
   export let progress: number = 50;
@@ -10,8 +12,6 @@
   let rate = -0.5;
 
   let timer: NodeJS.Timer | null = null;
-
-  $: trueProgress = 100 - progress;
 
   onMount(() => {
     timer = setInterval(() => {
@@ -33,44 +33,12 @@
     on:mouseover={() => (rate = -1)}
     on:mouseout={() => (rate = -0.5)}
   >
-    <svg viewBox="-5 -5 110 110">
-      <defs>
-        <linearGradient id="gradient">
-          <stop
-            offset="5%"
-            stop-color="#2f99fc"
-            gradientTransform="rotate(199)"
-          />
-          <stop offset="95%" stop-color="#2a87ff" />
-        </linearGradient>
-      </defs>
-      <mask id="wave-mask">
-        <rect x="0" y="0" width="100" height="100" fill="white" />
-
-        <path
-          stroke="black"
-          fill="black"
-          d="M {$offset} {trueProgress} c 20 10, 30 10, 50 0 c 20 -10, 30 -10, 50 0 c 20 10, 30 10, 50 0 c 20 -10, 30 -10, 50 0 l 0 -120 l -250 0 l 0 120"
-        />
-      </mask>
-
-      <circle
-        cx="50"
-        cy="50"
-        r="50"
-        fill="url(#gradient)"
-        mask="url(#wave-mask)"
-      />
-
-      <circle
-        cx="50"
-        cy="50"
-        r="50"
-        stroke="url(#gradient)"
-        stroke-width="5"
-        fill="transparent"
-      />
-    </svg>
+    <LogoSvg
+      {progress}
+      offset={$offset}
+      stopColorA={DEFAULT_THEME.highlightColorA}
+      stopColorB={DEFAULT_THEME.highlightColorB}
+    />
     <div class:visible={showLabel} class="label">
       <p>{progress.toFixed(2)}%</p>
     </div>

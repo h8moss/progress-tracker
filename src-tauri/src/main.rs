@@ -1,10 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{fs::{read_to_string, write}, process::Command, os::windows::process::CommandExt};
+use std::{fs::{read_to_string, write, read_dir, create_dir}, process::Command, os::windows::process::CommandExt, path::Path};
 use tauri::{CustomMenuItem, Manager, Menu, Submenu};
 use std::str;
-
 
 #[tauri::command]
 async fn write_file(path: String, value: String) -> Result<(), String> {
@@ -22,6 +21,60 @@ fn read_file(path: String) -> String {
     };
 
     contents
+}
+
+fn get_entries(path: &Path) -> Result<Vec<String>, &str> {
+    let mut result: Vec<String> = Vec::new();
+    if path.is_dir() {
+        if !path.exists() {
+            match create_dir(path) {
+                Ok(()) => {},
+                Err(_) => {
+                    return Err("Something went wrong");
+                }
+            }
+        }
+        let entries = match read_dir(path) {
+            Ok(v) => v,
+            Err(_) => {
+                return Err("Something went wrong")
+            }
+        };
+        for entry in entries {
+            let entry = match entry {
+                Ok(v) => v,
+                Err(_) => {
+                    return Err("Something went wrong")
+                },
+            };
+            let path = entry.path();
+            if path.is_file() {
+                let contents = match read_to_string(path) {
+                    Ok(v) => v,
+                    Err(_) => {
+                        return Err("Something went wrong")
+                    }
+                };
+                result.push(contents);
+            }
+        }
+    }
+
+    Ok(result)
+}
+
+#[tauri::command]
+fn read_folder(path: String) -> Vec<String> {
+    let path = Path::new(&path);
+
+    
+
+    let entries = match get_entries(path) {
+        Ok(v) => v,
+        Err(_) => Vec::new(),
+    };
+
+    entries
 }
 
 const CREATE_NO_WINDOW: u32 = 0x08000000;
@@ -52,24 +105,36 @@ fn main() {
     let file_submenu = Submenu::new(
         "File",
         Menu::new()
-            .add_item(CustomMenuItem::new("new".to_string(), "New"))
+            .add_item(CustomMenuItem::new("new".to_string(), "New (Ctrl+N)"))
             .add_item(CustomMenuItem::new(
                 "new-folder".to_string(),
                 "New from folder",
             ))
-            .add_item(CustomMenuItem::new("open".to_string(), "Open"))
-            .add_item(CustomMenuItem::new("save".to_string(), "Save"))
+            .add_item(CustomMenuItem::new("open".to_string(), "Open (Ctrl+O)"))
+            .add_item(CustomMenuItem::new("save".to_string(), "Save (Ctrl+S)"))
             .add_item(CustomMenuItem::new("save-as".to_string(), "Save as"))
-            .add_item(CustomMenuItem::new("quit".to_string(), "Quit")),
+            .add_item(CustomMenuItem::new("quit".to_string(), "Quit (Ctrl+Q)")),
+    );
+    let view_submenu = Submenu::new("View",
+        Menu::new()
+            .add_item(CustomMenuItem::new(
+                "fold-all".to_string(),
+                 "Fold all"
+            ))
+            .add_item(CustomMenuItem::new(
+                "unfold-all".to_string(), 
+                "Unfold all"
+            ))
     );
 
-    let menu = Menu::new().add_submenu(file_submenu);
+    let menu = Menu::new().add_submenu(file_submenu).add_submenu(view_submenu);
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             get_video_duration,
             read_file,
-            write_file
+            write_file,
+            read_folder,
         ])
         .menu(menu)
         .on_menu_event(|event| match event.menu_item_id() {
@@ -100,6 +165,12 @@ fn main() {
             "quit" => {
                 event.window().emit("quit", 0).expect("Error emitting quit");
             }
+            "fold-all" => {
+                event.window().emit("fold-all", 0).expect("Error emitting fold-all")
+            }
+            "unfold-all" => {
+                event.window().emit("unfold-all", 0).expect("Error emitting unfold-all")
+            }
 
             _ => {}
         })
@@ -115,7 +186,16 @@ fn main() {
                 });
             });
 
-            Ok(())
+            match app.path_resolver().app_data_dir() {
+                Some(data_dir) => {
+                    if !data_dir.exists() {
+                        let _ =  create_dir(data_dir);
+                    }
+                },
+                None => {}
+            };
+
+        Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
