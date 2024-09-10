@@ -28,7 +28,7 @@
   } from "../../types";
   import { slide, scale } from "svelte/transition";
   import ArrowRight from "./ArrowRight.svelte";
-  import { ContextMenuItems } from "../../util";
+  import { ContextMenuItems, interpretWeight } from "../../util";
   import weightedProgressStore from "./weightedProgressStore";
   import weightStore from "./weightStore";
   import titleEditStore from "./titleEditStore";
@@ -43,6 +43,8 @@
 
   export let isLast: () => boolean;
   export let isFirst: () => boolean;
+
+  let oldProgressValue = 0;
 
   type MoveDirections = "UP" | "DOWN" | "TOP" | "BOTTOM";
 
@@ -83,8 +85,21 @@
     ...structuredClone(node ? node.configuration : {}),
   } as Required<NodeConfiguration>;
 
-  $: progress = weightedProgressStore(configuration.weightInterpretation);
-  $: progress.set(getWeightedProgress(node));
+  $: progress = weightedProgressStore(
+    configuration.weightInterpretation,
+    oldProgressValue
+  );
+  $: {
+    if ($progress != undefined) {
+      console.log({ progress: $progress.progress });
+      oldProgressValue = $progress.progress;
+    }
+    // progress.set(getWeightedProgress(node));
+  }
+
+  $: {
+    progress.set(getWeightedProgress(node));
+  }
 
   $: weight = weightStore(
     node.weight || 0,
@@ -356,7 +371,12 @@
             <button on:click={weight.onFinishEditing}>Ok</button>
           </div>
         {:else}
-          <p>{$weight.interpreted}</p>
+          <p>{
+            interpretWeight({
+              weight: getTotalWeight(node),
+              weightInterpretation: configuration.weightInterpretation
+            })
+          }</p>
         {/if}
       </div>
       {#if node.children && (showChildren || headless)}

@@ -4,9 +4,9 @@ import { cubicOut } from "svelte/easing";
 import { tweened } from "svelte/motion";
 import { derived, writable } from "svelte/store";
 
-const weightedProgressStore = (weightInterpretation: WeightInterpretation) => {
-  const weightedProgress = writable(0);
-  const tweenedWeightedProgress = tweened(0, {
+const weightedProgressStore = (weightInterpretation: WeightInterpretation, initialValue = 0) => {
+  const weightedProgress = writable(initialValue);
+  const tweenedWeightedProgress = tweened(initialValue, {
     duration: 200,
     easing: cubicOut,
   });
