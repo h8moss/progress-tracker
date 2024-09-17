@@ -6,7 +6,7 @@ interface Params {
   path: string;
 }
 
-const addRecentData = async ({ title, path }: Params) => {
+const addRecentData = async ({ title, path }: Params): Promise<void> => {
   const dataDir = await appDataDir();
   const joinedPath = await join(dataDir, "\\recent.json");
   const currentDataStr = (await invoke("read_file", {

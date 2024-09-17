@@ -1,6 +1,6 @@
 import type { ProgressNode } from "../types";
 
-const setIsDone = (node: ProgressNode, isDone: boolean) => {
+const setIsDone = (node: ProgressNode, isDone: boolean): ProgressNode => {
   if (node.isDone !== undefined)
     return {
       ...node,
@@ -13,6 +13,8 @@ const setIsDone = (node: ProgressNode, isDone: boolean) => {
       children: node.children.map((child) => setIsDone(child, isDone)),
     };
   }
+
+  throw "Node is not valid";
 };
 
 export default setIsDone;
