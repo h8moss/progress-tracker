@@ -18,6 +18,7 @@
     position: sticky;
     top: 0.5rem;
     --bg: var(--bg-color, white);
+    z-index: 99;
   }
   div {
     background: linear-gradient(
