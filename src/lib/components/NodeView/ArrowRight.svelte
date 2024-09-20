@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Readable } from "svelte/store";
   import { onMount } from "svelte";
   import { cubicInOut } from "svelte/easing";
   import { tweened } from "svelte/motion";

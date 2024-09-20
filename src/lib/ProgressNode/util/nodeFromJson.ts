@@ -49,7 +49,7 @@ const nodeFromJson = (json: JSONValue): ProgressNode => {
       ? children.map((value) => nodeFromJson(value))
       : undefined,
     isDone,
-    configuration: configuration ? config! : undefined,
+    configuration: configuration ? config! : {},
   });
 };
 
