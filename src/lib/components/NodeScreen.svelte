@@ -84,6 +84,7 @@
               ...defaultConfig,
               ...$progressNode.configuration,
             },
+            false,
             (result) => {
               if ($progressNode) {
                 $progressNode.configuration = result;
