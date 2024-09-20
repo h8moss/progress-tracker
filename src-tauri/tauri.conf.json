@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "progress tracker",
+    "productName": "Progress Tracker",
     "version": "1.2.0"
   },
   "tauri": {
