@@ -22,6 +22,16 @@ const numberToUnit = ({
   return num.toFixed(2) + baseUnit;
 };
 
+const fixedTrailingZeros = (n: number, trailing: number, decimals: number) => {
+  let [left, right] = n.toFixed(decimals || 1).split(".")
+
+  while (left.length < trailing) {
+    left = `0${left}`
+  }
+  if (decimals == 0) return left.toString();
+  return `${left}.${right}`
+}
+
 const weightToSeconds = (w: number) => {
   let s = w;
   let m = 0;
@@ -37,7 +47,14 @@ const weightToSeconds = (w: number) => {
     }
   }
 
-  return `${h}:${m}:${s.toFixed(2)}`;
+  // Seconds String
+  let ss = fixedTrailingZeros(s, 2, 2);
+  // Minutes String
+  let ms = fixedTrailingZeros(m, 2, 0);
+  // Hours String
+  let hs = fixedTrailingZeros(h, 2, 0);
+
+  return `${hs}:${ms}:${ss}`;
 };
 
 const weightToGrams = (weight: number) =>

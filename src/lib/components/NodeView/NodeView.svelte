@@ -45,6 +45,8 @@
   export let isLast: () => boolean;
   export let isFirst: () => boolean;
 
+  let oldProgressValue = 0;
+
   type MoveDirections = "UP" | "DOWN" | "TOP" | "BOTTOM";
 
   const dispatch = createEventDispatcher<{
@@ -84,6 +86,7 @@
     ...structuredClone(node ? node.configuration : {}),
   } as Required<NodeConfiguration>;
 
+<<<<<<< HEAD
   const progress = tweened(getWeightedProgress(node), {
     duration: 200,
     easing: cubicOut,
@@ -95,6 +98,23 @@
   });
 
   $: progress.set(getWeightedProgress(node));
+=======
+  $: progress = weightedProgressStore(
+    configuration.weightInterpretation,
+    oldProgressValue
+  );
+  $: {
+    if ($progress != undefined) {
+      console.log({ progress: $progress.progress });
+      oldProgressValue = $progress.progress;
+    }
+    // progress.set(getWeightedProgress(node));
+  }
+
+  $: {
+    progress.set(getWeightedProgress(node));
+  }
+>>>>>>> main
 
   $: weight = weightStore(
     node.weight || 0,
@@ -356,7 +376,12 @@
             <button on:click={weight.onFinishEditing}>Ok</button>
           </div>
         {:else}
-          <p>{$weight.interpreted}</p>
+          <p>{
+            interpretWeight({
+              weight: getTotalWeight(node),
+              weightInterpretation: configuration.weightInterpretation
+            })
+          }</p>
         {/if}
       </div>
       {#if node.children && (showChildren || headless)}
