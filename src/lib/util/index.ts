@@ -3,6 +3,8 @@ import interpretWeight from "./interpretWeight";
 import promiseTimeout from "./promiseTimeout";
 import addRecentData from "./addRecentData";
 import ContextMenuItems from "./ContextMenuItems";
+import removeData from "./removeData";
+
 
 export {
   appEventListener,
@@ -10,4 +12,5 @@ export {
   promiseTimeout,
   addRecentData,
   ContextMenuItems,
+  removeData,
 };

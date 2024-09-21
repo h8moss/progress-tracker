@@ -40,10 +40,10 @@ export type ProgressNode = {
  */
   weight?: number;
   /**
- @param {NodeConfiguration?} configuration The configuration of the specific 
+ @param {NodeConfiguration} configuration The configuration of the specific 
  node. Configuration cascades
    */
-  configuration?: NodeConfiguration;
+  configuration: NodeConfiguration;
 
   /**
    @param {string} id A unique identifier for the task

@@ -12,6 +12,7 @@ const makeNodeValid = (n: ProgressNode | ProgressNodeNoID): ProgressNode => {
       children: node.children.map((child) => makeNodeValid(child)),
       isDone: undefined,
       weight: undefined,
+      configuration: node.configuration || {},
     });
   } else {
     return {

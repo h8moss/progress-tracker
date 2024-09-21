@@ -6,7 +6,7 @@ interface Params {
   path: string;
 }
 
-const addRecentData = async ({ title, path }: Params): Promise<void> => {
+const removeData = async ({title, path}: Params): Promise<void> => {
   const dataDir = await appDataDir();
   const joinedPath = await join(dataDir, "\\recent.json");
   const currentDataStr = (await invoke("read_file", {
@@ -15,25 +15,17 @@ const addRecentData = async ({ title, path }: Params): Promise<void> => {
   const currentDataJSON = JSON.parse((currentDataStr as string) || "[]");
 
   let newData = structuredClone(currentDataJSON) as Params[];
-  if (
-    newData.length > 0 &&
-    newData[0].path === path &&
-    newData[0].title === title
-  ) {
-    return;
-  }
 
-  const currentIndex = newData.findIndex((v) => v.path === path);
+  const currentIndex = newData.findIndex((v) => v.path === path && v.title === title);
 
   if (currentIndex !== -1) {
     newData.splice(currentIndex, 1);
   }
 
-  newData = [...newData, { title, path }];
   await invoke("write_file", {
     path: dataDir + "\\recent.json",
     value: JSON.stringify(newData),
   });
-};
+}
 
-export default addRecentData;
+export default removeData;

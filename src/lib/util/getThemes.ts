@@ -16,7 +16,7 @@ const defaultThemes: NodeTheme[] = [
   GLITCH_THEME,
 ];
 
-const getThemes = async () => {
+const getThemes = async (): Promise<NodeTheme[]> => {
   if (!themes) {
     const dataDir = await appDataDir();
     const path = await join(dataDir, "\\themes");
