@@ -119,8 +119,6 @@ We welcome contributions! Here's how you can help:
 4. Push to the branch: `git push origin feature/your-feature-name`.
 5. Submit a pull request.
 
-Please read our [Contributing Guidelines](CONTRIBUTING.md) for more details.
-
 ## 🗺️ Roadmap
 
 - [ ] Nicer UI
