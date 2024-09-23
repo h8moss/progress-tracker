@@ -36,6 +36,7 @@
   import CustomCheckbox from "../CustomCheckbox.svelte";
   import { tweened } from "svelte/motion";
   import ThemeProvider from "./ThemeProvider.svelte";
+  import EditableTextfield from "./EditableTextfield.svelte";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
@@ -318,17 +319,17 @@
           {/if}
           <div class="title-text">
             <div class="label" />
-            {#if $title.canEdit}
-              <div class="editing-input" on:click|stopPropagation>
-                <input
-                  bind:value={$editableTitle}
-                  on:submit={() => title.onEditDone()}
-                />
-                <button on:click={() => title.onEditDone()}>Ok</button>
-              </div>
-            {:else}
-              <p>{node.title}</p>
-            {/if}
+            <EditableTextfield
+              isEditing={$title.canEdit}
+              onEditStart={() => title.onEditStarted()}
+              onEditEnd={(v) => {
+                title.editableTitle.set(v);
+                title.onEditDone();
+              }}
+              value={node.title}
+            />
+            <div class="label-padding" />
+
             <div class="child-labels">
               {#each getChildrenLabels(node, getUndoneLabels) as labelColor (labelColor)}
                 <div
@@ -424,6 +425,10 @@
     border-radius: 2rem;
     background-color: var(--label-color, transparent);
   }
+  .label-padding {
+    width: 50px;
+    height: 10px;
+  }
 
   .short-label {
     width: 10px;
@@ -463,15 +468,6 @@
 
   .children {
     margin-left: 2rem;
-  }
-
-  .editing-input {
-    display: flex;
-    flex: 1;
-  }
-
-  .editing-input > input {
-    flex: 1;
   }
 
   .weight-editor {
