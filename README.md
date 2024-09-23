@@ -145,8 +145,9 @@ This project is licensed under the GNU GPLv3 License - see the [LICENSE](LICENSE
 ## 🙏 Acknowledgements
 
 ### Icons
-- Arrow-right icon by [ByPeople](https://www.bypeople.com/) (Public Domain)
-- Settings icon by [Vmware](https://github.com/vmware/clarity-assets) (MIT License)
+- Arrow-right icon by [ByPeople](https://www.bypeople.com?ref=svgrepo.com) (Public Domain)
+- Settings icon by [Vmware](https://github.com/vmware/clarity-assets?ref=svgrepo.com) (MIT License)
+- Edit and Save icon by [Konstantin Filatov](https://www.figma.com/@thinkcly?ref=svgrepo.com) (CC Attribution License)
 
 Icons sourced from [SVG Repo](https://www.svgrepo.com).
 
