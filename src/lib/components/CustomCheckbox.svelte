@@ -25,5 +25,6 @@
     width: 20px;
     display: flex;
     justify-content: center;
+    cursor: pointer;
   }
 </style>
