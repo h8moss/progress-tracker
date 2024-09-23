@@ -52,7 +52,6 @@
       <label for="weight-interpretation"
         >Weight interpretation:
         <span class="grow" />
-        {console.log({ currentValues })}
         <select
           name="weight-interpretation"
           bind:value={currentValues.weightInterpretation}
