@@ -33,12 +33,12 @@
       onDone = callback;
 
       if (
-        isUnsetAllowed &&
+        !isUnsetAllowed &&
         (!currentValues.colorLabel ||
           !currentValues.theme ||
           !currentValues.weightInterpretation)
       ) {
-        throw "Error: all fields must be set if unset is allowed";
+        throw "Error: all fields must be set if unset is not allowed";
       }
 
       dialog.showModal();
