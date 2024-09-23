@@ -34,17 +34,19 @@ const appEventListener = async ({
   isLoading,
   path,
   needsSave,
-}: Args) => {
+}: Args): Promise<() => unknown> => {
   let unlistenArr: (() => void)[] = [
     await listen("new", (_) => {
       progressNode.set(
         makeNodeValid({
           title: "Untitled",
+          configuration: {},
           children: [
             {
               title: "Task 1",
               weight: 1,
               isDone: false,
+              configuration: {},
             },
           ],
         })

@@ -6,7 +6,7 @@
     onMount,
   } from "svelte";
   import ProgressIndicator from "../ProgressIndicator.svelte";
-  import { cubicInOut } from "svelte/easing";
+  import { cubicInOut, cubicOut } from "svelte/easing";
   import type { ProgressNode } from "../../ProgressNode";
   import {
     copyWith,
@@ -29,12 +29,13 @@
   import { slide, scale } from "svelte/transition";
   import ArrowRight from "./ArrowRight.svelte";
   import { ContextMenuItems, interpretWeight } from "../../util";
-  import weightedProgressStore from "./weightedProgressStore";
   import weightStore from "./weightStore";
   import titleEditStore from "./titleEditStore";
   import naturalCompare from "natural-compare-lite";
   import { listen, type UnlistenFn } from "@tauri-apps/api/event";
   import CustomCheckbox from "../CustomCheckbox.svelte";
+  import { tweened } from "svelte/motion";
+  import ThemeProvider from "./ThemeProvider.svelte";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
@@ -53,10 +54,10 @@
     move: MoveDirections;
   }>();
 
+  let showChildren = false;
+
   let unsubFoldAll: UnlistenFn | null;
   let unsubUnfoldAll: UnlistenFn | null;
-
-  let showChildren = false;
 
   onMount(async () => {
     unsubFoldAll = await listen("fold-all", (_) => (showChildren = false));
@@ -69,13 +70,13 @@
   });
 
   const title = titleEditStore(node.title, (title) =>
-    dispatch("changed", copyWith(node, { title }))
+    dispatch("changed", copyWith(node, { title })),
   );
   $: editableTitle = title.editableTitle;
 
   const contextMenuContext = getContext<ContextMenuHandle>("context-menu");
   const configurationDialogCtx = getContext<ConfigurationDialogContext>(
-    "configuration-dialog"
+    "configuration-dialog",
   );
 
   $: if (!isNodeValid(node)) dispatch("changed", makeNodeValid(node));
@@ -85,26 +86,21 @@
     ...structuredClone(node ? node.configuration : {}),
   } as Required<NodeConfiguration>;
 
-  $: progress = weightedProgressStore(
-    configuration.weightInterpretation,
-    oldProgressValue
-  );
-  $: {
-    if ($progress != undefined) {
-      console.log({ progress: $progress.progress });
-      oldProgressValue = $progress.progress;
-    }
-    // progress.set(getWeightedProgress(node));
-  }
+  const progress = tweened(getWeightedProgress(node), {
+    duration: 200,
+    easing: cubicOut,
+  });
 
-  $: {
-    progress.set(getWeightedProgress(node));
-  }
+  $: progressInterpreted = interpretWeight({
+    weight: $progress,
+    weightInterpretation: configuration?.weightInterpretation || "none",
+  });
 
+  $: progress.set(getWeightedProgress(node));
   $: weight = weightStore(
     node.weight || 0,
     configuration.weightInterpretation,
-    (weight) => dispatch("changed", copyWith(node, { weight }))
+    (weight) => dispatch("changed", copyWith(node, { weight })),
   );
   $: editableWeight = weight.editableWeight;
 
@@ -117,7 +113,7 @@
 
   const onChildChanged = (
     index: number,
-    newChild: CustomEvent<ProgressNode | null>
+    newChild: CustomEvent<ProgressNode | null>,
   ) => {
     if (node.children) {
       const child = newChild.detail;
@@ -187,7 +183,7 @@
             children: undefined,
             isDone: false,
             weight: 1,
-          })
+          }),
         );
       } else {
         dispatch(
@@ -196,7 +192,7 @@
             children: [],
             isDone: undefined,
             weight: undefined,
-          })
+          }),
         );
       }
     },
@@ -208,14 +204,15 @@
             title: newChildTitle(node),
             isDone: false,
             weight: 1,
+            configuration: {},
           }),
-        ])
+        ]),
       ),
     sort: () => {
       const copy = structuredClone(node);
       if (copy.children) {
         copy.children = copy.children.sort((a, b) =>
-          naturalCompare(a.title, b.title)
+          naturalCompare(a.title, b.title),
         );
 
         dispatch("changed", copy);
@@ -225,19 +222,14 @@
     "toggle-all": () => dispatch("changed", setIsDone(node, !getIsDone(node))),
     "edit-weight": () => weight.onStartEditing(),
     configuration: () => {
-      console.log({ nodeConfiguration: node.configuration });
-      configurationDialogCtx.open(
-        {
-          ...defaultConfig,
-          ...node.configuration,
-        },
-        (value) =>
-          dispatch(
-            "changed",
-            copyWith(node, {
-              configuration: value,
-            })
-          )
+      console.log({ configuring: true, node });
+      configurationDialogCtx.open(node.configuration, true, (value) =>
+        dispatch(
+          "changed",
+          copyWith(node, {
+            configuration: value,
+          }),
+        ),
       );
     },
     "shift-up": () => dispatch("move", "UP"),
@@ -254,7 +246,7 @@
           { id: "rename", label: "Rename" },
           { id: "configuration", label: "Configuration" },
         ],
-        !headless
+        !headless,
       )
       // Add if childless
       .addAllIf(
@@ -262,7 +254,7 @@
           { id: "toggle-children", label: "Make childful" },
           { id: "edit-weight", label: "Edit weight" },
         ],
-        !node.children
+        !node.children,
       )
       // add if childful
       .addAllIf(
@@ -272,21 +264,21 @@
           { id: "add-child", label: "New child" },
           { id: "sort", label: "Sort" },
         ],
-        !!node.children
+        !!node.children,
       )
       .addAllIf(
         [
           { id: "shift-top", label: "Move to top" },
           { id: "shift-up", label: "Move up" },
         ],
-        !headless && !isFirst()
+        !headless && !isFirst(),
       )
       .addAllIf(
         [
           { id: "shift-down", label: "Move down" },
           { id: "shift-bottom", label: "Move to bottom" },
         ],
-        !headless && !isLast()
+        !headless && !isLast(),
       )
       // add if can delete
       .addIf({ id: "delete", label: "Delete", color: "red" }, canDelete);
@@ -299,19 +291,13 @@
 
 {#if node}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div
-    class="parent"
-    style:--bg-color={defaultConfig.theme.backgroundColor !==
+  <ThemeProvider
+    backgroundColor={defaultConfig.theme.backgroundColor !==
     configuration.theme.backgroundColor
       ? configuration.theme.backgroundColor
       : "transparent"}
-    style:--text-color={configuration.theme.textColor}
-    style:--darken-color="{configuration.theme.darkenColor[0]}, {configuration
-      .theme.darkenColor[1]}, {configuration.theme.darkenColor[2]}"
-    style:--text-color-b={configuration.theme.textColorB}
-    style:--accent={configuration.theme.highlightColorA}
-    style:--accent-b={configuration.theme.highlightColorB}
-    style:--label-color={node.configuration?.colorLabel || "transparent"}
+    theme={configuration.theme}
+    colorLabel={node.configuration?.colorLabel || "transparent"}
   >
     {(console.log({ config: node.configuration, name: node.title }), "")}
     <div
@@ -355,12 +341,12 @@
           </div>
         </div>
         <ProgressIndicator
-          progress={$progress.progress}
+          progress={$progress}
           maximum={getTotalWeight(node)}
         />
       </div>
       <div class="weights">
-        <p>{$progress.interpretation}</p>
+        <p>{progressInterpreted}</p>
 
         {#if $weight.isEditing}
           <div class="weight-editor">
@@ -371,12 +357,12 @@
             <button on:click={weight.onFinishEditing}>Ok</button>
           </div>
         {:else}
-          <p>{
-            interpretWeight({
+          <p>
+            {interpretWeight({
               weight: getTotalWeight(node),
-              weightInterpretation: configuration.weightInterpretation
-            })
-          }</p>
+              weightInterpretation: configuration.weightInterpretation,
+            })}
+          </p>
         {/if}
       </div>
       {#if node.children && (showChildren || headless)}
@@ -403,13 +389,10 @@
         </div>
       {/if}
     </div>
-  </div>
+  </ThemeProvider>
 {/if}
 
 <style>
-  .parent {
-    background-color: var(--bg-color, transparent);
-  }
   .content {
     --background-color-opacity: 0;
 

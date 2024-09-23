@@ -24,8 +24,9 @@ export type NodeManager = {
 
 export type ConfigurationDialogContext = {
   open: (
-    config: Required<NodeConfiguration>,
-    callback: (result: Required<NodeConfiguration>) => unknown
+    config: NodeConfiguration,
+    allowUnset: boolean,
+    callback: (result: NodeConfiguration) => unknown
   ) => void;
 };
 

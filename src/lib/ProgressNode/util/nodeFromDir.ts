@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api";
 import { sep } from "@tauri-apps/api/path";
 import naturalCompare from "natural-compare-lite";
 
-const isVideoFile = (path: string) => {
+const isVideoFile = (path: string): boolean => {
   const extension = path.split(".").at(-1);
   if (!extension) return false;
   return ["mp4", "mkv", "avi", "mov", "wmv", "flv", "webm"].includes(
@@ -39,7 +39,7 @@ const getBaseName = (
     : extensionSplit.slice(0, -1).join(".");
 };
 
-const getVideoFileWeight = async (path: string) => {
+const getVideoFileWeight = async (path: string): Promise<number> => {
   return Math.floor((await invoke("get_video_duration", { path })) as number);
 };
 
@@ -64,6 +64,7 @@ const nodesFromDirs = async (
           title,
           isDone: false,
           weight,
+          configuration: {}
         }),
       ];
     } else if (!isFile) {
@@ -72,6 +73,7 @@ const nodesFromDirs = async (
         generateRandomID({
           title,
           children: await nodesFromDirs(entry.children!, options),
+          configuration: {}
         }),
       ];
     }

@@ -132,11 +132,11 @@
     display: flex;
 
     width: 0rem;
-    min-height: 4.5rem;
+    height: 5rem;
 
     text-align: justify;
 
-    padding: 0rem;
+    padding: 0.25rem 0.25;
 
     transition: 200ms cubic-bezier(0.165, 0.84, 0.44, 1);
     transition-property: padding, width;

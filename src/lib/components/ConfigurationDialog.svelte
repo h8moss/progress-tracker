@@ -8,20 +8,38 @@
   import type { ConfigurationDialogContext } from "../types";
   import getThemes from "../util/getThemes";
 
-  let currentValues: Required<NodeConfiguration> = {
-    weightInterpretation: "none",
-    colorLabel: "transparent",
-    theme: DEFAULT_THEME,
-  };
+  let currentValues: NodeConfiguration = {};
 
-  let onDone: (result: Required<NodeConfiguration>) => unknown = () => {};
+  let onDone: (result: NodeConfiguration) => unknown = () => {};
+
+  let isUnsetAllowed = true;
+
+  $: {
+    if (!isUnsetAllowed) {
+      currentValues = {
+        colorLabel: currentValues.colorLabel || "transparent",
+        theme: currentValues.theme || DEFAULT_THEME,
+        weightInterpretation: currentValues.weightInterpretation || "none",
+      };
+    }
+  }
 
   let dialog: HTMLDialogElement;
 
   setContext<ConfigurationDialogContext>("configuration-dialog", {
-    open: (config, callback) => {
+    open: (config, allowUnset, callback) => {
       currentValues = config;
+      isUnsetAllowed = allowUnset;
       onDone = callback;
+
+      if (
+        isUnsetAllowed &&
+        (!currentValues.colorLabel ||
+          !currentValues.theme ||
+          !currentValues.weightInterpretation)
+      ) {
+        throw "Error: all fields must be set if unset is allowed";
+      }
 
       dialog.showModal();
     },
@@ -33,10 +51,15 @@
     <div class="content">
       <label for="weight-interpretation"
         >Weight interpretation:
+        <span class="grow" />
+        {console.log({ currentValues })}
         <select
           name="weight-interpretation"
           bind:value={currentValues.weightInterpretation}
         >
+          {#if isUnsetAllowed}
+            <option value={undefined}>Inherit</option>
+          {/if}
           {#each WEIGHT_INTERPRETATIONS as weightInterpretation}
             <option value={weightInterpretation}>{weightInterpretation}</option>
           {/each}
@@ -44,10 +67,14 @@
       </label>
       <label for="theme"
         >Theme
+        <span class="grow" />
         {#await getThemes()}
           <p>...</p>
         {:then themes}
           <select name="theme" bind:value={currentValues.theme}>
+            {#if isUnsetAllowed}
+              <option value={undefined}>Inherit</option>
+            {/if}
             {#each themes as theme}
               <option value={theme}>{theme.name}</option>
             {/each}
@@ -55,7 +82,9 @@
         {/await}
       </label>
       <label for="label-color">
-        Label: <select
+        Label:
+        <span class="grow" />
+        <select
           name="label-color"
           class="label-color-select"
           bind:value={currentValues.colorLabel}
@@ -88,6 +117,15 @@
 <slot />
 
 <style>
+  label {
+    display: flex;
+  }
+
+  label .grow {
+    flex: 1;
+    min-width: 2rem;
+  }
+
   select.label-color-select option {
     display: flex;
   }
