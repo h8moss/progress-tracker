@@ -9,6 +9,7 @@
   fill="none"
   xmlns="http://www.w3.org/2000/svg"
 >
+  <title>Edit</title>
   <path
     fill-rule="evenodd"
     clip-rule="evenodd"
