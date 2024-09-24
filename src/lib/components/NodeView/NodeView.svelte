@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fly } from "svelte/transition";
   import {
     createEventDispatcher,
     getContext,
@@ -37,6 +38,7 @@
   import { tweened } from "svelte/motion";
   import ThemeProvider from "./ThemeProvider.svelte";
   import EditableTextfield from "./EditableTextfield.svelte";
+  import { flip } from "svelte/animate";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
@@ -305,6 +307,7 @@
       class="content"
       on:click|stopPropagation={onClick}
       on:contextmenu|preventDefault|stopPropagation={onContextMenu}
+      transition:slide
     >
       <div class="head" class:headless>
         <div class="title">
@@ -332,11 +335,7 @@
 
             <div class="child-labels">
               {#each getChildrenLabels(node, getUndoneLabels) as labelColor (labelColor)}
-                <div
-                  class="short-label"
-                  style:background-color={labelColor}
-                  transition:scale
-                />
+                <div class="short-label" style:background-color={labelColor} />
               {/each}
             </div>
           </div>
@@ -367,13 +366,7 @@
         {/if}
       </div>
       {#if node.children && (showChildren || headless)}
-        <div
-          class="children"
-          transition:slide={{
-            duration: 200,
-            easing: cubicInOut,
-          }}
-        >
+        <div class="children">
           {#if node.children.length === 0}
             <p>No sub-tasks yet...</p>
           {/if}
@@ -387,6 +380,25 @@
               defaultConfig={configuration}
             />
           {/each}
+          <button
+            class="add-child"
+            on:click|stopPropagation={() =>
+              dispatch(
+                "changed",
+                plusChildren(node, [
+                  makeNodeValid({
+                    title: newChildTitle(node),
+                    isDone: false,
+                    weight: 1,
+                    configuration: {},
+                  }),
+                ]),
+              )}
+            transition:slide
+          >
+            <div />
+            <span>+</span>
+          </button>
         </div>
       {/if}
     </div>
@@ -472,5 +484,50 @@
 
   .weight-editor {
     display: flex;
+  }
+
+  button.add-child {
+    background-color: transparent;
+    border: none;
+
+    margin: auto;
+    padding: 0px;
+
+    width: 3rem;
+    height: 3rem;
+    padding: 0.5rem;
+
+    display: grid;
+    grid-template-rows: 1fr;
+
+    font-size: 1.5rem;
+  }
+
+  button.add-child > div {
+    width: 100%;
+    height: 100%;
+    background-color: var(--accent-b);
+    z-index: 1;
+
+    transform: scale(0);
+
+    transition-property: transform, border-radius;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  button.add-child:hover > div {
+    transform: scale(1) translate(0px);
+    border-radius: 1rem;
+  }
+
+  button.add-child > span {
+    z-index: 2;
+    margin: auto;
+  }
+
+  button.add-child > * {
+    grid-column: 1;
+    grid-row: 1;
   }
 </style>
