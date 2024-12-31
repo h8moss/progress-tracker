@@ -53,13 +53,13 @@ Personalize your experience with custom color schemes.
 2. Download the latest version of the application.
 3. Run the installer and follow the prompts.
 
-### Other Platforms (Linux and macOS)
+### Other Platforms (Linux and MacOS)
 > [!WARNING]
 > The application has only been tested on Windows and was designed with Windows in mind. It may or may not work correctly on other systems.
 > 
-> There are currently no official releases for Linux or macOS. However, if there's sufficient user interest in testing and bug reporting, we may consider creating official releases for these platforms in the future.
+> There are currently no official releases for Linux or MacOS. However, if there's sufficient user interest in testing and bug reporting, we may consider creating official releases for these platforms in the future.
 
-While there are no pre-built releases for Linux or macOS, it is possible to build the project from source:
+While there are no pre-built releases for Linux or MacOS, it is possible to build the project from source:
 
 1. Clone the repository:
    ```bash
@@ -126,14 +126,16 @@ We welcome contributions! Here's how you can help:
 - [ ] Slider tasks
 - [ ] Custom weight units
 - [ ] Setting default theme
+- [ ] Duplicating tasks
+- [ ] Add ffmpeg to the relase so it is not a requirement
 
 ## ❓ Frequently Asked Questions
 
 **Q: Can I sync my tasks across multiple devices?**
-A: Progress Tracker is, and will remain, a fully offline application, we will never send your tasks over to a server, that being said, you can use an application like [syncthing](https://syncthing.net/) to keep your files perpetually synced across devices
+A: Progress Tracker is, and will always remain, a fully offline application, we will never send your tasks over to a server, that being said, you can use an application like [syncthing](https://syncthing.net/) to keep your files perpetually synced across devices
 
 **Q: Is there a mobile version available?**
-A: Absolutely no!!!! But the fine folks at Tauri have previously stated that mobile builds are coming soon
+A: Absolutely no!!!! This is something that we do not have planned as it would require a full rewrite of the application
 
 **Q: How can I report a bug or request a feature?**
 A: Please use our [GitHub Issues](https://github.com/h8moss/progress-tracker/issues) page to report bugs or suggest new features.
