@@ -1,9 +1,3 @@
-/**
- Describes some task with an importance ({@link ProgressNode["weight"]}), 
- a name ({@link ProgressNode.title}), and optionally, 
- sub-tasks ({@link ProgressNode.children})
- */
-
 import type { WeightInterpretation } from "../types";
 
 export type NodeTheme = {
