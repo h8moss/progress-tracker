@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { fly } from "svelte/transition";
   import {
     createEventDispatcher,
     getContext,
     onDestroy,
     onMount,
   } from "svelte";
+  import type { WeightDialogContext } from "../../types";
   import ProgressIndicator from "../ProgressIndicator.svelte";
-  import { cubicInOut, cubicOut } from "svelte/easing";
+  import { cubicOut } from "svelte/easing";
   import type { ProgressNode } from "../../ProgressNode";
   import {
     copyWith,
@@ -27,10 +27,9 @@
     ConfigurationDialogContext,
     ContextMenuHandle,
   } from "../../types";
-  import { slide, scale } from "svelte/transition";
+  import { slide } from "svelte/transition";
   import ArrowRight from "./ArrowRight.svelte";
   import { ContextMenuItems, interpretWeight } from "../../util";
-  import weightStore from "./weightStore";
   import titleEditStore from "./titleEditStore";
   import naturalCompare from "natural-compare-lite";
   import { listen, type UnlistenFn } from "@tauri-apps/api/event";
@@ -38,7 +37,7 @@
   import { tweened } from "svelte/motion";
   import ThemeProvider from "./ThemeProvider.svelte";
   import EditableTextfield from "./EditableTextfield.svelte";
-  import { flip } from "svelte/animate";
+  import WeightDialog from "../WeightDialog.svelte";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
@@ -47,8 +46,6 @@
 
   export let isLast: () => boolean;
   export let isFirst: () => boolean;
-
-  let oldProgressValue = 0;
 
   type MoveDirections = "UP" | "DOWN" | "TOP" | "BOTTOM";
 
@@ -75,8 +72,8 @@
   const title = titleEditStore(node.title, (title) =>
     dispatch("changed", copyWith(node, { title })),
   );
-  $: editableTitle = title.editableTitle;
 
+  const weightDialogCtx = getContext<WeightDialogContext>("weight-dialog");
   const contextMenuContext = getContext<ContextMenuHandle>("context-menu");
   const configurationDialogCtx = getContext<ConfigurationDialogContext>(
     "configuration-dialog",
@@ -94,18 +91,12 @@
     easing: cubicOut,
   });
 
-  $: progressInterpreted = interpretWeight({
-    weight: $progress,
-    weightInterpretation: configuration?.weightInterpretation || "none",
-  });
+  $: progressInterpreted = interpretWeight(
+    configuration.weightInterpretation,
+    $progress,
+  );
 
   $: progress.set(getWeightedProgress(node));
-  $: weight = weightStore(
-    node.weight || 0,
-    configuration.weightInterpretation,
-    (weight) => dispatch("changed", copyWith(node, { weight })),
-  );
-  $: editableWeight = weight.editableWeight;
 
   const onClick = () => {
     if (node.children) showChildren = !showChildren;
@@ -223,9 +214,27 @@
     },
     delete: () => dispatch("changed", null),
     "toggle-all": () => dispatch("changed", setIsDone(node, !getIsDone(node))),
-    "edit-weight": () => weight.onStartEditing(),
+    "edit-weight": () =>
+      weightDialogCtx.open(
+        {
+          value: node.weight || 0,
+          interpretation: configuration.weightInterpretation,
+        },
+        defaultConfig.weightInterpretation,
+        (result) => {
+          dispatch(
+            "changed",
+            copyWith(node, {
+              configuration: {
+                ...node.configuration,
+                weightInterpretation: result.interpretation,
+              },
+              weight: result.value,
+            }),
+          );
+        },
+      ),
     configuration: () => {
-      console.log({ configuring: true, node });
       configurationDialogCtx.open(node.configuration, true, (value) =>
         dispatch(
           "changed",
@@ -347,23 +356,12 @@
       </div>
       <div class="weights">
         <p>{progressInterpreted}</p>
-
-        {#if $weight.isEditing}
-          <div class="weight-editor">
-            <div on:click|stopPropagation>
-              <input bind:value={$editableWeight} type="number" />
-              <p>{$weight.editableInterpreted}</p>
-            </div>
-            <button on:click={weight.onFinishEditing}>Ok</button>
-          </div>
-        {:else}
-          <p>
-            {interpretWeight({
-              weight: getTotalWeight(node),
-              weightInterpretation: configuration.weightInterpretation,
-            })}
-          </p>
-        {/if}
+        <p>
+          {interpretWeight(
+            configuration.weightInterpretation,
+            getTotalWeight(node),
+          )}
+        </p>
       </div>
       {#if node.children && (showChildren || headless)}
         <div class="children">
@@ -480,10 +478,6 @@
 
   .children {
     margin-left: 2rem;
-  }
-
-  .weight-editor {
-    display: flex;
   }
 
   button.add-child {
