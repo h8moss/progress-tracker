@@ -5,8 +5,9 @@
     onDestroy,
     onMount,
   } from "svelte";
+  import type { WeightDialogContext } from "../../types";
   import ProgressIndicator from "../ProgressIndicator.svelte";
-  import { cubicInOut, cubicOut } from "svelte/easing";
+  import { cubicOut } from "svelte/easing";
   import type { ProgressNode } from "../../ProgressNode";
   import {
     copyWith,
@@ -26,16 +27,17 @@
     ConfigurationDialogContext,
     ContextMenuHandle,
   } from "../../types";
-  import { slide, scale } from "svelte/transition";
+  import { slide } from "svelte/transition";
   import ArrowRight from "./ArrowRight.svelte";
   import { ContextMenuItems, interpretWeight } from "../../util";
-  import weightStore from "./weightStore";
   import titleEditStore from "./titleEditStore";
   import naturalCompare from "natural-compare-lite";
   import { listen, type UnlistenFn } from "@tauri-apps/api/event";
   import CustomCheckbox from "../CustomCheckbox.svelte";
   import { tweened } from "svelte/motion";
   import ThemeProvider from "./ThemeProvider.svelte";
+  import EditableTextfield from "./EditableTextfield.svelte";
+  import WeightDialog from "../WeightDialog.svelte";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
@@ -44,8 +46,6 @@
 
   export let isLast: () => boolean;
   export let isFirst: () => boolean;
-
-  let oldProgressValue = 0;
 
   type MoveDirections = "UP" | "DOWN" | "TOP" | "BOTTOM";
 
@@ -72,8 +72,8 @@
   const title = titleEditStore(node.title, (title) =>
     dispatch("changed", copyWith(node, { title })),
   );
-  $: editableTitle = title.editableTitle;
 
+  const weightDialogCtx = getContext<WeightDialogContext>("weight-dialog");
   const contextMenuContext = getContext<ContextMenuHandle>("context-menu");
   const configurationDialogCtx = getContext<ConfigurationDialogContext>(
     "configuration-dialog",
@@ -91,18 +91,12 @@
     easing: cubicOut,
   });
 
-  $: progressInterpreted = interpretWeight({
-    weight: $progress,
-    weightInterpretation: configuration?.weightInterpretation || "none",
-  });
+  $: progressInterpreted = interpretWeight(
+    configuration.weightInterpretation,
+    $progress,
+  );
 
   $: progress.set(getWeightedProgress(node));
-  $: weight = weightStore(
-    node.weight || 0,
-    configuration.weightInterpretation,
-    (weight) => dispatch("changed", copyWith(node, { weight })),
-  );
-  $: editableWeight = weight.editableWeight;
 
   const onClick = () => {
     if (node.children) showChildren = !showChildren;
@@ -220,9 +214,27 @@
     },
     delete: () => dispatch("changed", null),
     "toggle-all": () => dispatch("changed", setIsDone(node, !getIsDone(node))),
-    "edit-weight": () => weight.onStartEditing(),
+    "edit-weight": () =>
+      weightDialogCtx.open(
+        {
+          value: node.weight || 0,
+          interpretation: configuration.weightInterpretation,
+        },
+        defaultConfig.weightInterpretation,
+        (result) => {
+          dispatch(
+            "changed",
+            copyWith(node, {
+              configuration: {
+                ...node.configuration,
+                weightInterpretation: result.interpretation,
+              },
+              weight: result.value,
+            }),
+          );
+        },
+      ),
     configuration: () => {
-      console.log({ configuring: true, node });
       configurationDialogCtx.open(node.configuration, true, (value) =>
         dispatch(
           "changed",
@@ -304,6 +316,7 @@
       class="content"
       on:click|stopPropagation={onClick}
       on:contextmenu|preventDefault|stopPropagation={onContextMenu}
+      transition:slide
     >
       <div class="head" class:headless>
         <div class="title">
@@ -318,24 +331,20 @@
           {/if}
           <div class="title-text">
             <div class="label" />
-            {#if $title.canEdit}
-              <div class="editing-input" on:click|stopPropagation>
-                <input
-                  bind:value={$editableTitle}
-                  on:submit={() => title.onEditDone()}
-                />
-                <button on:click={() => title.onEditDone()}>Ok</button>
-              </div>
-            {:else}
-              <p>{node.title}</p>
-            {/if}
+            <EditableTextfield
+              isEditing={$title.canEdit}
+              onEditStart={() => title.onEditStarted()}
+              onEditEnd={(v) => {
+                title.editableTitle.set(v);
+                title.onEditDone();
+              }}
+              value={node.title}
+            />
+            <div class="label-padding" />
+
             <div class="child-labels">
               {#each getChildrenLabels(node, getUndoneLabels) as labelColor (labelColor)}
-                <div
-                  class="short-label"
-                  style:background-color={labelColor}
-                  transition:scale
-                />
+                <div class="short-label" style:background-color={labelColor} />
               {/each}
             </div>
           </div>
@@ -347,32 +356,15 @@
       </div>
       <div class="weights">
         <p>{progressInterpreted}</p>
-
-        {#if $weight.isEditing}
-          <div class="weight-editor">
-            <div on:click|stopPropagation>
-              <input bind:value={$editableWeight} type="number" />
-              <p>{$weight.editableInterpreted}</p>
-            </div>
-            <button on:click={weight.onFinishEditing}>Ok</button>
-          </div>
-        {:else}
-          <p>
-            {interpretWeight({
-              weight: getTotalWeight(node),
-              weightInterpretation: configuration.weightInterpretation,
-            })}
-          </p>
-        {/if}
+        <p>
+          {interpretWeight(
+            configuration.weightInterpretation,
+            getTotalWeight(node),
+          )}
+        </p>
       </div>
       {#if node.children && (showChildren || headless)}
-        <div
-          class="children"
-          transition:slide={{
-            duration: 200,
-            easing: cubicInOut,
-          }}
-        >
+        <div class="children">
           {#if node.children.length === 0}
             <p>No sub-tasks yet...</p>
           {/if}
@@ -386,6 +378,25 @@
               defaultConfig={configuration}
             />
           {/each}
+          <button
+            class="add-child"
+            on:click|stopPropagation={() =>
+              dispatch(
+                "changed",
+                plusChildren(node, [
+                  makeNodeValid({
+                    title: newChildTitle(node),
+                    isDone: false,
+                    weight: 1,
+                    configuration: {},
+                  }),
+                ]),
+              )}
+            transition:slide
+          >
+            <div />
+            <span>+</span>
+          </button>
         </div>
       {/if}
     </div>
@@ -423,6 +434,10 @@
     height: 10px;
     border-radius: 2rem;
     background-color: var(--label-color, transparent);
+  }
+  .label-padding {
+    width: 50px;
+    height: 10px;
   }
 
   .short-label {
@@ -465,16 +480,48 @@
     margin-left: 2rem;
   }
 
-  .editing-input {
-    display: flex;
-    flex: 1;
+  button.add-child {
+    background-color: transparent;
+    border: none;
+
+    margin: auto;
+    padding: 0px;
+
+    width: 3rem;
+    height: 3rem;
+    padding: 0.5rem;
+
+    display: grid;
+    grid-template-rows: 1fr;
+
+    font-size: 1.5rem;
   }
 
-  .editing-input > input {
-    flex: 1;
+  button.add-child > div {
+    width: 100%;
+    height: 100%;
+    background-color: var(--accent-b);
+    z-index: 1;
+
+    transform: scale(0);
+
+    transition-property: transform, border-radius;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
   }
 
-  .weight-editor {
-    display: flex;
+  button.add-child:hover > div {
+    transform: scale(1) translate(0px);
+    border-radius: 1rem;
+  }
+
+  button.add-child > span {
+    z-index: 2;
+    margin: auto;
+  }
+
+  button.add-child > * {
+    grid-column: 1;
+    grid-row: 1;
   }
 </style>

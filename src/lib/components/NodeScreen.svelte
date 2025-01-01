@@ -11,13 +11,14 @@
   import SettingsIcon from "./SettingsIcon.svelte";
   import type { ConfigurationDialogContext } from "../types";
   import { DEFAULT_THEME } from "../ProgressNode/constants";
+  import { getWeightInterpretations } from "../util";
 
   const { needsSave, progressNode } = getContext<NodeManager>("nodeManager");
 
   const node = derived(progressNode, (n) => n!);
 
   const defaultConfig: Required<NodeConfiguration> = {
-    weightInterpretation: "none",
+    weightInterpretation: getWeightInterpretations()[0],
     colorLabel: "transparent",
     theme: DEFAULT_THEME,
   };
@@ -29,7 +30,7 @@
   let isTitleHovered = false;
 
   const configurationDialogCtx = getContext<ConfigurationDialogContext>(
-    "configuration-dialog"
+    "configuration-dialog",
   );
 
   $: $titleStore = $node.title;
@@ -50,12 +51,12 @@
 
   $: if ($node.title !== initialTitle) $needsSave = true;
 
-  $: console.log({ $node });
-
   $: configuration = {
-    ...defaultConfig,
-    ...($progressNode?.configuration || {}),
+    ...structuredClone(defaultConfig),
+    ...structuredClone($progressNode?.configuration || {}),
   };
+
+  $: console.log({ configuration });
 </script>
 
 <div
@@ -90,7 +91,7 @@
                 $progressNode.configuration = result;
                 $needsSave = true;
               }
-            }
+            },
           );
         }
       }}
