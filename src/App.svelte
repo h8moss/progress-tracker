@@ -16,6 +16,7 @@
   import ConfigurationDialog from "./lib/components/ConfigurationDialog.svelte";
   import ShortcutListener from "./lib/components/ShortcutListener.svelte";
   import { emit } from "@tauri-apps/api/event";
+  import WeightDialog from "./lib/components/WeightDialog.svelte";
 
   const isLoading = tweened<number | null>(50, {
     duration: 200,
@@ -66,7 +67,7 @@
     appWindow.setTitle(
       ($progressNode?.title ?? "Welcome") +
         ($needsSave ? "*" : "") +
-        ($path ? ` - ${$path}` : "")
+        ($path ? ` - ${$path}` : ""),
     );
   }
 
@@ -93,15 +94,17 @@
     if (ctrl) emit("quit", 0);
   }}
 >
-  <ConfigurationDialog>
-    <ContextMenuHandler>
-      {#if $isLoading !== null}
-        <LoadingScreen progress={$isLoading} showLabel />
-      {:else if $progressNode}
-        <NodeScreen />
-      {:else}
-        <WelcomeScreen />
-      {/if}
-    </ContextMenuHandler>
-  </ConfigurationDialog>
+  <WeightDialog>
+    <ConfigurationDialog>
+      <ContextMenuHandler>
+        {#if $isLoading !== null}
+          <LoadingScreen progress={$isLoading} showLabel />
+        {:else if $progressNode}
+          <NodeScreen />
+        {:else}
+          <WelcomeScreen />
+        {/if}
+      </ContextMenuHandler>
+    </ConfigurationDialog>
+  </WeightDialog>
 </ShortcutListener>
