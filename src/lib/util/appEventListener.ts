@@ -1,15 +1,16 @@
 import { emit, listen, type Event } from "@tauri-apps/api/event";
 import { get, type Writable } from "svelte/store";
 import type { ProgressNode } from "../ProgressNode";
-import { open, save } from "@tauri-apps/api/dialog";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import {
   makeNodeValid,
   nodeFromDir,
   nodeFromJsonPath,
 } from "../ProgressNode/util";
-import { invoke } from "@tauri-apps/api";
-import { appWindow } from "@tauri-apps/api/window";
-import { confirm } from "@tauri-apps/api/dialog";
+import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { confirm } from "@tauri-apps/plugin-dialog";
+const appWindow = getCurrentWebviewWindow()
 
 interface Args {
   progressNode: Writable<ProgressNode | null>;

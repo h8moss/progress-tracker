@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { appWindow } from "@tauri-apps/api/window";
+  import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
   import { onMount, setContext, onDestroy } from "svelte";
   import type {
     ContextMenuHandle,
     ContextMenuItem,
     ContextMenuItemHandler,
   } from "../types";
-  import { globalShortcut } from "@tauri-apps/api";
   import { ContextMenuItems } from "../util";
+  import * as globalShortcut from "@tauri-apps/plugin-global-shortcut";
+  const appWindow = getCurrentWebviewWindow();
 
   const MENU_WIDTH = 200;
   const MENU_ITEM_HEIGHT = 35;
