@@ -3,5 +3,5 @@
 /target/
 
 # Mobile related, can be safely ignored
-/gen/
+/gen/**/*
 
