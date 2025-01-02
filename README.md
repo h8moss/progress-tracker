@@ -122,7 +122,7 @@ We welcome contributions! Here's how you can help:
 ## 🗺️ Roadmap
 
 - [ ] Nicer UI
-- [ ] Automatic updates
+- [x] Automatic updates
 - [ ] Slider tasks
 - [ ] Custom weight units
 - [ ] Setting default theme
