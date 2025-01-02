@@ -101,31 +101,7 @@ fn get_video_duration(path: String) -> f32 {
 }
 
 fn main() {
-    //     let file_submenu = Submenu::new(
-    //         "File",
-    //         Menu::new()
-    //             .add_item(CustomMenuItem::new("new".to_string(), "New (Ctrl+N)"))
-    //             .add_item(CustomMenuItem::new(
-    //                 "new-folder".to_string(),
-    //                 "New from folder",
-    //             ))
-    //             .add_item(CustomMenuItem::new("open".to_string(), "Open (Ctrl+O)"))
-    //             .add_item(CustomMenuItem::new("save".to_string(), "Save (Ctrl+S)"))
-    //             .add_item(CustomMenuItem::new("save-as".to_string(), "Save as"))
-    //             .add_item(CustomMenuItem::new("quit".to_string(), "Quit (Ctrl+Q)")),
-    //     );
-    //     let view_submenu = Submenu::new(
-    //         "View",
-    //         Menu::new()
-    //             .add_item(CustomMenuItem::new("fold-all".to_string(), "Fold all"))
-    //             .add_item(CustomMenuItem::new("unfold-all".to_string(), "Unfold all")),
-    //     );
-    //
-    //     let menu = Menu::new()
-    //         .add_submenu(file_submenu)
-    //         .add_submenu(view_submenu);
-    //
-    tauri::Builder::default()
+   tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_cli::init())
@@ -138,87 +114,14 @@ fn main() {
             write_file,
             read_folder,
         ])
-        //         .menu(menu)
-        //         .on_menu_event(|event| match event.menu_item_id() {
-        //             "new" => {
-        //                 event.window().emit("new", 0).expect("Error emitting new");
-        //             }
-        //             "new-folder" => {
-        //                 event
-        //                     .window()
-        //                     .emit("new-folder", 0)
-        //                     .expect("Error emitting new-folder");
-        //             }
-        //             "open" => {
-        //                 event.window().emit("open", 0).expect("Error emitting open");
-        //             }
-        //             "save-as" => {
-        //                 event
-        //                     .window()
-        //                     .emit("save-as", 0)
-        //                     .expect("Error emitting get-save-as-path");
-        //             }
-        //             "save" => {
-        //                 event
-        //                     .window()
-        //                     .emit("get-save-path", 0)
-        //                     .expect("Error emitting get-save-path");
-        //             }
-        //             "quit" => {
-        //                 event.window().emit("quit", 0).expect("Error emitting quit");
-        //             }
-        //             "fold-all" => event
-        //                 .window()
-        //                 .emit("fold-all", 0)
-        //                 .expect("Error emitting fold-all"),
-        //             "unfold-all" => event
-        //                 .window()
-        //                 .emit("unfold-all", 0)
-        //                 .expect("Error emitting unfold-all"),
-        //
-        //             _ => {}
-        //         })
-        .setup(|app| {
+       .setup(|app| {
             app.listen("quit", |event| {
                 std::process::exit(match event.payload().parse() {
                     Err(_) => 0,
                     Ok(num) => num,
                 });
             });
-
-            // match app.path_resolver().app_data_dir() {
-            //     Some(data_dir) => {
-            //         if !data_dir.exists() {
-            //             let _ = create_dir(data_dir);
-            //         }
-            //     }
-            //     None => {}
-            // };
-            //     let file_submenu = Submenu::new(
-            //         "File",
-            //         Menu::new()
-            //             .add_item(CustomMenuItem::new("new".to_string(), "New (Ctrl+N)"))
-            //             .add_item(CustomMenuItem::new(
-            //                 "new-folder".to_string(),
-            //                 "New from folder",
-            //             ))
-            //             .add_item(CustomMenuItem::new("open".to_string(), "Open (Ctrl+O)"))
-            //             .add_item(CustomMenuItem::new("save".to_string(), "Save (Ctrl+S)"))
-            //             .add_item(CustomMenuItem::new("save-as".to_string(), "Save as"))
-            //             .add_item(CustomMenuItem::new("quit".to_string(), "Quit (Ctrl+Q)")),
-            //     );
-            //     let view_submenu = Submenu::new(
-            //         "View",
-            //         Menu::new()
-            //             .add_item(CustomMenuItem::new("fold-all".to_string(), "Fold all"))
-            //             .add_item(CustomMenuItem::new("unfold-all".to_string(), "Unfold all")),
-            //     );
-            //
-            //     let menu = Menu::new()
-            //         .add_submenu(file_submenu)
-            //         .add_submenu(view_submenu);
-
-            let file = SubmenuBuilder::new(app, "File")
+           let file = SubmenuBuilder::new(app, "File")
                 .items(&[
                     &MenuItemBuilder::with_id("new", "New")
                         .accelerator("Ctrl+N")
