@@ -11,13 +11,18 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.6.0",
+    "@tauri-apps/api": "^2.1.1",
+    "@tauri-apps/plugin-cli": "^2.2.0",
+    "@tauri-apps/plugin-dialog": "^2.2.0",
+    "@tauri-apps/plugin-fs": "^2.2.0",
+    "@tauri-apps/plugin-global-shortcut": "^2.2.0",
+    "@tauri-apps/plugin-shell": "^2.2.0",
     "natural-compare-lite": "^1.4.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.0",
-    "@tauri-apps/cli": "^1.4.0",
+    "@tauri-apps/cli": "^2.1.0",
     "@tsconfig/svelte": "^3.0.0",
     "@types/natural-compare": "^1.4.1",
     "@types/natural-compare-lite": "^1.4.0",
