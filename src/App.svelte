@@ -85,8 +85,9 @@
   on:O={({ detail: { ctrl } }) => {
     if (ctrl) emit("open", 0);
   }}
-  on:S={({ detail: { ctrl } }) => {
-    if (ctrl) emit("get-save-path", 0);
+  on:S={({ detail: { ctrl, shift } }) => {
+    if (ctrl && !shift) emit("get-save-path", 0);
+    if (ctrl && shift) emit("save-as", "");
   }}
   on:Q={({ detail: { ctrl } }) => {
     if (ctrl) emit("quit", 0);
