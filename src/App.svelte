@@ -17,7 +17,7 @@
   import ShortcutListener from "./lib/components/ShortcutListener.svelte";
   import { emit } from "@tauri-apps/api/event";
   import WeightDialog from "./lib/components/WeightDialog.svelte";
-const appWindow = getCurrentWebviewWindow()
+  const appWindow = getCurrentWebviewWindow();
 
   const isLoading = tweened<number | null>(50, {
     duration: 200,
