@@ -115,7 +115,7 @@ fn main() {
             read_folder,
         ])
        .setup(|app| {
-            app.listen("quit", |event| {
+            app.listen("quit-true", |event| {
                 std::process::exit(match event.payload().parse() {
                     Err(_) => 0,
                     Ok(num) => num,
@@ -130,7 +130,7 @@ fn main() {
                     &MenuItemBuilder::with_id("open", "Open")
                         .accelerator("Ctrl+O")
                         .build(app)?,
-                    &MenuItemBuilder::with_id("save", "Save")
+                    &MenuItemBuilder::with_id("get-save-path", "Save")
                         .accelerator("Ctrl+S")
                         .build(app)?,
                     &MenuItemBuilder::with_id("save-as", "Save as...")
