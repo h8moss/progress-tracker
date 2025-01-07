@@ -57,6 +57,7 @@
   };
 
   $: console.log({ configuration });
+  $: console.log({ node: $node });
 </script>
 
 <div
