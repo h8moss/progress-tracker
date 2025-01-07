@@ -1,7 +1,7 @@
 import type { ProgressNode } from "../types";
-import { readDir, type FileEntry } from "@tauri-apps/api/fs";
+import { readDir, type FileEntry } from "@tauri-apps/plugin-fs";
 import generateRandomID from "./generateRandomID";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { sep } from "@tauri-apps/api/path";
 import naturalCompare from "natural-compare-lite";
 
@@ -35,8 +35,8 @@ const getBaseName = (
   return extensionSplit.length === 0
     ? ""
     : extensionSplit.length === 1
-    ? extensionSplit[0]
-    : extensionSplit.slice(0, -1).join(".");
+      ? extensionSplit[0]
+      : extensionSplit.slice(0, -1).join(".");
 };
 
 const getVideoFileWeight = async (path: string): Promise<number> => {
@@ -86,7 +86,7 @@ const nodesFromDirs = async (
 
 const nodeFromDir = async (
   path: string,
-  progressCallback: (current: number) => unknown = () => {}
+  progressCallback: (current: number) => unknown = () => { }
 ): Promise<ProgressNode | null> => {
   const children = await readDir(path, { recursive: true });
 

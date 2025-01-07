@@ -2,15 +2,26 @@
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": false
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "Progress Tracker",
-    "version": "1.2.2"
+  "bundle": {
+    "active": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "targets": "all",
+    "createUpdaterArtifacts": true
   },
-  "tauri": {
+  "productName": "Progress Tracker",
+  "mainBinaryName": "Progress Tracker",
+  "version": "1.2.2",
+  "identifier": "com.h8m0ss.progress-tracker",
+  "plugins": {
     "cli": {
       "description": "",
       "longDescription": "",
@@ -24,99 +35,27 @@
         }
       ]
     },
-    "allowlist": {
-      "globalShortcut": {
-        "all": true
-      },
-      "window": {
-        "all": false,
-        "center": false,
-        "close": true,
-        "create": false,
-        "hide": false,
-        "maximize": false,
-        "minimize": false,
-        "print": false,
-        "requestUserAttention": false,
-        "setAlwaysOnTop": false,
-        "setContentProtected": false,
-        "setCursorGrab": false,
-        "setCursorIcon": false,
-        "setCursorPosition": false,
-        "setCursorVisible": false,
-        "setDecorations": false,
-        "setFocus": false,
-        "setFullscreen": false,
-        "setIcon": false,
-        "setIgnoreCursorEvents": false,
-        "setMaxSize": false,
-        "setMinSize": false,
-        "setPosition": false,
-        "setResizable": false,
-        "setSize": false,
-        "setSkipTaskbar": false,
-        "setTitle": true,
-        "show": false,
-        "startDragging": false,
-        "unmaximize": false,
-        "unminimize": false
-      },
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "dialog": {
-        "all": false,
-        "ask": false,
-        "confirm": true,
-        "message": false,
-        "open": true,
-        "save": true
-      },
-      "fs": {
-        "all": false,
-        "copyFile": false,
-        "createDir": false,
-        "exists": true,
-        "readDir": true,
-        "readFile": false,
-        "removeDir": false,
-        "removeFile": false,
-        "renameFile": false,
-        "scope": [],
-        "writeFile": true
-      },
-      "path": {
-        "all": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.h8m0ss.progress-tracker",
-      "targets": "all"
-    },
-    "security": {
-      "csp": null
-    },
     "updater": {
-      "active": false
-    },
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDgxREIzODA5NzU3QjE0NEMKUldSTUZIdDFDVGpiZ2ZhY2R6UVNMSmJYYS8vRmU0dlFMVDEvdXAwaXFYQXZsY1o3MW1aQ3ZpWlUK",
+      "endpoints": [
+        "https://github.com/h8moss/progress-tracker/releases/latest/download/latest.json"
+      ]
+    }
+  },
+  "app": {
     "windows": [
       {
         "fullscreen": false,
         "resizable": true,
         "title": "Progress Tracker",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "useHttpsScheme": true
       }
-    ]
+    ],
+    "withGlobalTauri": false,
+    "security": {
+      "csp": null
+    }
   }
 }

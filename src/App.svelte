@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getMatches } from "@tauri-apps/api/cli";
+  import { getMatches } from "@tauri-apps/plugin-cli";
   import type { NodeManager } from "./lib/types";
   import { onMount, setContext, onDestroy } from "svelte";
   import { nodeFromJsonPath } from "./lib/ProgressNode/util";
@@ -7,7 +7,7 @@
   import LoadingScreen from "./lib/components/LoadingScreen.svelte";
   import WelcomeScreen from "./lib/components/WelcomeScreen.svelte";
   import NodeScreen from "./lib/components/NodeScreen.svelte";
-  import { appWindow } from "@tauri-apps/api/window";
+  import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
   import type { ProgressNode } from "./lib/ProgressNode";
   import { addRecentData, appEventListener } from "./lib/util";
   import ContextMenuHandler from "./lib/components/ContextMenuHandler.svelte";
@@ -17,6 +17,7 @@
   import ShortcutListener from "./lib/components/ShortcutListener.svelte";
   import { emit } from "@tauri-apps/api/event";
   import WeightDialog from "./lib/components/WeightDialog.svelte";
+  const appWindow = getCurrentWebviewWindow();
 
   const isLoading = tweened<number | null>(50, {
     duration: 200,
@@ -84,8 +85,9 @@
   on:O={({ detail: { ctrl } }) => {
     if (ctrl) emit("open", 0);
   }}
-  on:S={({ detail: { ctrl } }) => {
-    if (ctrl) emit("get-save-path", 0);
+  on:S={({ detail: { ctrl, shift } }) => {
+    if (ctrl && !shift) emit("get-save-path", 0);
+    if (ctrl && shift) emit("save-as", "");
   }}
   on:Q={({ detail: { ctrl } }) => {
     if (ctrl) emit("quit", 0);
