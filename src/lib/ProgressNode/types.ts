@@ -16,32 +16,45 @@ export type NodeConfiguration = {
   theme?: NodeTheme;
 };
 
+export enum NodeType {
+  childful,
+  checkbox,
+  slider
+}
+
 export type ProgressNode = {
   /**
- @param {string} title The title of the node.
-   */
+  @param {NodeType} type - The type of the node
+  */
+  type: NodeType;
+  /**
+  @param {string} title The title of the node.
+  */
   title: string;
   /**
- @param {boolean?} isDone Weather the task is done or not
- */
+  @param {boolean?} isDone Weather the task is done or not
+  */
   isDone?: boolean;
   /**
- @param {ProgressNode[]?} children A list of subtasks for this node.
- */
+  @param {ProgressNode[]?} children A list of subtasks for this node.
+  */
   children?: ProgressNode[];
   /**
- @param {number?} weight How important this task is.
- */
+  @param {number?} progress - Progress from 0 to 1 (for sliders)
+  */
+  progress?: number;
+  /**
+  @param {number?} weight How important this task is.
+  */
   weight?: number;
   /**
- @param {NodeConfiguration} configuration The configuration of the specific 
- node. Configuration cascades
-   */
+  @param {NodeConfiguration} configuration The configuration of the specific 
+  node. Configuration cascades
+  */
   configuration: NodeConfiguration;
-
   /**
-   @param {string} id A unique identifier for the task
-   */
+  @param {string} id A unique identifier for the task
+  */
   id: string;
 };
 

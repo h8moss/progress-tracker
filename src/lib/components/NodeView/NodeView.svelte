@@ -9,6 +9,8 @@
   import ProgressIndicator from "../ProgressIndicator.svelte";
   import { cubicOut } from "svelte/easing";
   import type { ProgressNode } from "../../ProgressNode";
+  import { NodeType } from "../../ProgressNode/types";
+  import LogoSvg from "../LogoSVG.svelte";
   import {
     copyWith,
     getIsDone,
@@ -37,7 +39,6 @@
   import { tweened } from "svelte/motion";
   import ThemeProvider from "./ThemeProvider.svelte";
   import EditableTextfield from "./EditableTextfield.svelte";
-  import WeightDialog from "../WeightDialog.svelte";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
@@ -99,8 +100,8 @@
   $: progress.set(getWeightedProgress(node));
 
   const onClick = () => {
-    if (node.children) showChildren = !showChildren;
-    if (node.isDone !== undefined) {
+    if (node.type === NodeType.childful) showChildren = !showChildren;
+    if (node.type === NodeType.checkbox) {
       dispatch("changed", copyWith(node, { isDone: !node.isDone }));
     }
   };
@@ -169,23 +170,44 @@
 
   const contextMenuCallbacks: Record<string, () => void> = {
     rename: () => title.onEditStarted(),
-    "toggle-children": () => {
-      if (node.children) {
-        dispatch(
-          "changed",
-          copyWith(node, {
-            children: undefined,
-            isDone: false,
-            weight: 1,
-          }),
-        );
-      } else {
+    "make-childful": () => {
+      if (node.type !== NodeType.childful) {
         dispatch(
           "changed",
           copyWith(node, {
             children: [],
             isDone: undefined,
             weight: undefined,
+            progress: undefined,
+            type: NodeType.childful,
+          }),
+        );
+      }
+    },
+    "make-checkbox": () => {
+      if (node.type !== NodeType.checkbox) {
+        dispatch(
+          "changed",
+          copyWith(node, {
+            children: undefined,
+            isDone: false,
+            weight: node.weight ?? 1.0,
+            progress: undefined,
+            type: NodeType.checkbox,
+          }),
+        );
+      }
+    },
+    "make-slider": () => {
+      if (node.type !== NodeType.slider) {
+        dispatch(
+          "changed",
+          copyWith(node, {
+            children: undefined,
+            isDone: undefined,
+            weight: node.weight ?? 1.0,
+            progress: 0.0,
+            type: NodeType.slider,
           }),
         );
       }
@@ -196,6 +218,7 @@
         plusChildren(node, [
           makeNodeValid({
             title: newChildTitle(node),
+            type: NodeType.checkbox,
             isDone: false,
             weight: 1,
             configuration: {},
@@ -263,20 +286,29 @@
       // Add if childless
       .addAllIf(
         [
-          { id: "toggle-children", label: "Make childful" },
           { id: "edit-weight", label: "Edit weight" },
+          { id: "make-childful", label: "Make childful" },
         ],
-        !node.children,
+        node.type !== NodeType.childful,
+      )
+      // Add if not checkbox
+      .addAllIf(
+        [{ id: "make-checkbox", label: "Make checkbox" }],
+        node.type !== NodeType.checkbox,
+      )
+      // Add if not slider
+      .addAllIf(
+        [{ id: "make-slider", label: "Make slider" }],
+        node.type !== NodeType.slider,
       )
       // add if childful
       .addAllIf(
         [
-          { id: "toggle-children", label: "Make childless" },
           { id: "toggle-all", label: "Toggle all" },
           { id: "add-child", label: "New child" },
           { id: "sort", label: "Sort" },
         ],
-        !!node.children,
+        node.type === NodeType.childful,
       )
       .addAllIf(
         [
@@ -320,14 +352,23 @@
     >
       <div class="head" class:headless>
         <div class="title">
-          {#if node.isDone !== undefined}
+          {#if node.type === NodeType.checkbox}
             <CustomCheckbox
-              checked={node.isDone}
+              checked={node.isDone || false}
               stopColorA={configuration.theme.highlightColorA}
               stopColorB={configuration.theme.highlightColorB}
             />
-          {:else}
+          {:else if node.type === NodeType.childful}
             <ArrowRight isRotated={showChildren} />
+          {:else}
+            <div class="logo">
+              <LogoSvg
+                offset={$progress * 100}
+                progress={$progress * 100}
+                stopColorA={configuration.theme.highlightColorA}
+                stopColorB={configuration.theme.highlightColorB}
+              />
+            </div>
           {/if}
           <div class="title-text">
             <div class="label" />
@@ -340,6 +381,26 @@
               }}
               value={node.title}
             />
+            {#if node.type === NodeType.slider}
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={node.progress}
+                style:accent-color={configuration.theme.highlightColorA}
+                on:input={(e) => {
+                  console.log("Change!! ");
+                  console.log(e.target.value);
+                  dispatch(
+                    "changed",
+                    copyWith(node, {
+                      progress: Number.parseFloat(e.target.value),
+                    }),
+                  );
+                }}
+              />
+            {/if}
             <div class="label-padding" />
 
             <div class="child-labels">
@@ -386,6 +447,7 @@
                 plusChildren(node, [
                   makeNodeValid({
                     title: newChildTitle(node),
+                    type: NodeType.checkbox,
                     isDone: false,
                     weight: 1,
                     configuration: {},
@@ -462,6 +524,11 @@
 
   .title {
     display: flex;
+    flex: 1;
+  }
+
+  .title-text {
+    flex: 1;
   }
 
   .weights {
@@ -523,5 +590,17 @@
   button.add-child > * {
     grid-column: 1;
     grid-row: 1;
+  }
+
+  div.logo {
+    padding: 0.25rem;
+    width: 20px;
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  input[type="range"] {
+    width: 80%;
   }
 </style>

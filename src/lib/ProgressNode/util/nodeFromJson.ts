@@ -1,5 +1,5 @@
 import type { JSONValue } from "src/lib/types";
-import type { NodeConfiguration, ProgressNode } from "../types";
+import { NodeType, type NodeConfiguration, type ProgressNode } from "../types";
 import makeNodeValid from "./makeNodeValid";
 
 const configObjectAsConfiguration = (
@@ -19,7 +19,7 @@ const nodeFromJson = (json: JSONValue): ProgressNode => {
   if (json === null || typeof json !== "object" || Array.isArray(json)) {
     throw "JSON value does not represent an object, and thus, it can't be a node";
   }
-  const { title, weight, children, isDone, configuration, id } = json;
+  const { title, weight, children, isDone, configuration, id, type, progress } = json;
   const config = configObjectAsConfiguration(configuration);
 
   if (
@@ -28,7 +28,9 @@ const nodeFromJson = (json: JSONValue): ProgressNode => {
     (typeof children !== "undefined" && !Array.isArray(children)) ||
     (typeof isDone !== "undefined" && typeof isDone !== "boolean") ||
     (typeof configuration !== "undefined" && config === null) ||
-    (typeof id !== "undefined" && typeof id !== "string")
+    (typeof id !== "undefined" && typeof id !== "string") ||
+    (typeof type !== "undefined" && typeof type !== "number") ||
+    (typeof progress !== "undefined" && typeof progress !== "number")
   ) {
     console.error({
       json,
@@ -38,12 +40,22 @@ const nodeFromJson = (json: JSONValue): ProgressNode => {
       isDone,
       id,
       configuration,
+      type,
+      progress,
     });
     throw "JSON value does not represent a node. Missing either title, weight, children, configuration or isDone";
   }
 
   return makeNodeValid({
     title,
+    progress,
+    type: type === undefined ? (
+      children === undefined ? (
+        isDone === undefined ? (
+          NodeType.slider
+        ) : NodeType.checkbox
+      ) : NodeType.childful
+    ) : type,
     weight,
     children: children
       ? children.map((value) => nodeFromJson(value))

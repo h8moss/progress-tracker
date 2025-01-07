@@ -14,6 +14,13 @@ const setIsDone = (node: ProgressNode, isDone: boolean): ProgressNode => {
     };
   }
 
+  if (node.progress !== undefined) {
+    return {
+      ...node,
+      progress: 1,
+    }
+  }
+
   throw "Node is not valid";
 };
 
