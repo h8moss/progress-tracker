@@ -24,6 +24,7 @@
     "global-shortcut:allow-unregister-all",
     "fs:default",
     "dialog:default",
+    "shell:default",
     "shell:default"
   ]
 }
