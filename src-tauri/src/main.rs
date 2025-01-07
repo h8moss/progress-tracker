@@ -5,7 +5,6 @@ use regex::Regex;
 use std::str;
 use std::{
     fs::{create_dir, read_dir, read_to_string, write},
-    os::windows::process::CommandExt,
     path::Path,
     process::Command,
 };
