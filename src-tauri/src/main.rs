@@ -11,6 +11,8 @@ use std::{
 };
 use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
 use tauri::{Emitter, Listener};
+use tauri_plugin_shell::ShellExt;
+use tauri_plugin_shell::process::CommandEvent;
 
 #[tauri::command]
 async fn write_file(path: String, value: String) -> Result<(), String> {
@@ -81,8 +83,9 @@ const CREATE_NO_WINDOW: u32 = 0x08000000;
 #[tauri::command]
 fn get_video_duration(path: String) -> f32 {
     let re = Regex::new(r"duration=(?<dur>\d+)").unwrap();
-    let mut cmd = Command::new("ffprobe");
-    let command = cmd.args([path.as_str(), "-show_entries", "format=duration", "-v", "0"]);
+    let mut sidecar_command = app.shell().sidecar("ffprobe").unwrap();
+    // let mut cmd = Command::new("ffprobe");
+    let command = sidecar_command.args([path.as_str(), "-show_entries", "format=duration", "-v", "0"]);
 
     command.creation_flags(CREATE_NO_WINDOW);
 
