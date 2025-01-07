@@ -29,7 +29,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path "src-tauri/binaries"
           $TARGET_TRIPLE=rustc -Vv | Select-String "host:" | ForEach-Object {$_.Line.split(" ")[1]}
-          $FFPROBEPATH = "src-tauri/binaries/ffprobe-$TARGET_TRIPLE"
+          $FFPROBEPATH = "src-tauri/binaries/ffprobe-$TARGET_TRIPLE.exe"
           Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -OutFile "ffmpeg.zip"
           Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg-temp"
           Move-Item -Path "ffmpeg-temp/ffmpeg-master-latest-win64-gpl/bin/ffprobe.exe" -Destination $FFPROBEPATH
