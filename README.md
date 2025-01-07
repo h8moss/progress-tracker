@@ -35,7 +35,7 @@ Assign importance to your tasks. Heavier tasks contribute more to your overall p
 Weights can be interpreted and rendered as different units, making it easier to understand task importance in various contexts.
 
 ### 🎥 Automatic Video Weights
-Create TODO lists based on video durations in your filesystem. (Requires [ffmpeg](https://ffmpeg.org/download.html) in PATH)
+Create TODO lists based on video durations in your filesystem. (Thanks to [ffmpeg](https://ffmpeg.org/download.html))
 
 ### 🎨 Custom Themes
 Personalize your experience with custom color schemes.
@@ -53,38 +53,52 @@ Personalize your experience with custom color schemes.
 2. Download the latest version of the application.
 3. Run the installer and follow the prompts.
 
-### Other Platforms (Linux and macOS)
+### Building for source (Windows, Linux and MacOS)
 > [!WARNING]
 > The application has only been tested on Windows and was designed with Windows in mind. It may or may not work correctly on other systems.
 > 
-> There are currently no official releases for Linux or macOS. However, if there's sufficient user interest in testing and bug reporting, we may consider creating official releases for these platforms in the future.
+> There are currently no official releases for Linux or MacOS. However, if there's sufficient user interest in testing and bug reporting, we may consider creating official releases for these platforms in the future.
 
-While there are no pre-built releases for Linux or macOS, it is possible to build the project from source:
+1. Install dependencies
+    Check tauri's [prerequisites](https://tauri.app/start/prerequisites/) and follow the instructions. You will need to install NodeJS, Rust, and a few other platform-dependent dependencies.
 
-1. Clone the repository:
+2. Download ffmpeg from the [official website](https://ffmpeg.org/download.html)
+
+3. Clone the repository:
    ```bash
    git clone https://github.com/h8moss/progress-tracker
    cd progress-tracker
    ```
+4. Get your current target's triple by running this command:
+    ```
+    rustc -Vv | Select-String "host:" | ForEach-Object {$_.Line.split(" ")[1]}
+    ```
+    or on linux/macOS:
+    ```
+    rustc -Vv | grep host | cut -f2 -d' '
+    ```
+    Remember this value for next step
 
-2. Install dependencies:
+5. Move ffprobe from the bin folder in ffmpeg to
+    `path/to/progress-tracker/src-tauri/binaries`
+    and rename it to:
+    `ffprobe-{TARGET TRIPLE FROM PREVIOUS STEP}`
+
+6. Install dependencies:
    ```bash
    npm install
    ```
 
-3. Build the project:
+7. Build the project:
    ```bash
    npm run tauri build
    ```
-
-Note: Building from source requires Node.js, npm, and Rust to be installed on your system. Please refer to the [Tauri prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites) for detailed setup instructions.
-
 If you encounter any issues during installation or have suggestions for improving cross-platform support, please open an issue on our [GitHub repository](https://github.com/h8moss/progress-tracker/issues).
 ## 🖱️ Usage
 
 1. Launch Progress Tracker from your applications menu or desktop shortcut.
 2. Here you may start a new tracker or open an existing one
-3. To add new tasks right click anywhere within the main task and click "new child"
+3. To add new tasks right click anywhere within the main task and click "new child" or press the big plus button at the bottom.
 4. To create subtasks first right click any existing task and click "make childful", then right click it and click "new child"
 
 ## 🛠️ Customization
@@ -122,18 +136,20 @@ We welcome contributions! Here's how you can help:
 ## 🗺️ Roadmap
 
 - [ ] Nicer UI
-- [ ] Automatic updates
+- [x] Automatic updates
 - [ ] Slider tasks
 - [ ] Custom weight units
 - [ ] Setting default theme
+- [ ] Duplicating tasks
+- [ ] Add ffmpeg to the relase so it is not a requirement
 
 ## ❓ Frequently Asked Questions
 
 **Q: Can I sync my tasks across multiple devices?**
-A: Progress Tracker is, and will remain, a fully offline application, we will never send your tasks over to a server, that being said, you can use an application like [syncthing](https://syncthing.net/) to keep your files perpetually synced across devices
+A: Progress Tracker is, and will always remain, a fully offline application, we will never send your tasks over to a server, that being said, you can use an application like [syncthing](https://syncthing.net/) to keep your files perpetually synced across devices
 
 **Q: Is there a mobile version available?**
-A: Absolutely no!!!! But the fine folks at Tauri have previously stated that mobile builds are coming soon
+A: Absolutely no!!!! This is something that we do not have planned as it would require a full rewrite of the application
 
 **Q: How can I report a bug or request a feature?**
 A: Please use our [GitHub Issues](https://github.com/h8moss/progress-tracker/issues) page to report bugs or suggest new features.
@@ -145,8 +161,9 @@ This project is licensed under the GNU GPLv3 License - see the [LICENSE](LICENSE
 ## 🙏 Acknowledgements
 
 ### Icons
-- Arrow-right icon by [ByPeople](https://www.bypeople.com/) (Public Domain)
-- Settings icon by [Vmware](https://github.com/vmware/clarity-assets) (MIT License)
+- Arrow-right icon by [ByPeople](https://www.bypeople.com?ref=svgrepo.com) (Public Domain)
+- Settings icon by [Vmware](https://github.com/vmware/clarity-assets?ref=svgrepo.com) (MIT License)
+- Edit and Save icon by [Konstantin Filatov](https://www.figma.com/@thinkcly?ref=svgrepo.com) (CC Attribution License)
 
 Icons sourced from [SVG Repo](https://www.svgrepo.com).
 

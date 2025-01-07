@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api";
+  import { invoke } from "@tauri-apps/api/core";
   import { nodeFromJsonPath } from "../ProgressNode/util";
   import { getContext } from "svelte";
   import type { NodeManager } from "../types";

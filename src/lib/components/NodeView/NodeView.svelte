@@ -5,9 +5,12 @@
     onDestroy,
     onMount,
   } from "svelte";
+  import type { WeightDialogContext } from "../../types";
   import ProgressIndicator from "../ProgressIndicator.svelte";
-  import { cubicInOut, cubicOut } from "svelte/easing";
+  import { cubicOut } from "svelte/easing";
   import type { ProgressNode } from "../../ProgressNode";
+  import { NodeType } from "../../ProgressNode/types";
+  import LogoSvg from "../LogoSVG.svelte";
   import {
     copyWith,
     getIsDone,
@@ -26,16 +29,16 @@
     ConfigurationDialogContext,
     ContextMenuHandle,
   } from "../../types";
-  import { slide, scale } from "svelte/transition";
+  import { slide } from "svelte/transition";
   import ArrowRight from "./ArrowRight.svelte";
   import { ContextMenuItems, interpretWeight } from "../../util";
-  import weightStore from "./weightStore";
   import titleEditStore from "./titleEditStore";
   import naturalCompare from "natural-compare-lite";
   import { listen, type UnlistenFn } from "@tauri-apps/api/event";
   import CustomCheckbox from "../CustomCheckbox.svelte";
   import { tweened } from "svelte/motion";
   import ThemeProvider from "./ThemeProvider.svelte";
+  import EditableTextfield from "./EditableTextfield.svelte";
 
   export let headless: boolean = false;
   export let node: ProgressNode;
@@ -44,8 +47,6 @@
 
   export let isLast: () => boolean;
   export let isFirst: () => boolean;
-
-  let oldProgressValue = 0;
 
   type MoveDirections = "UP" | "DOWN" | "TOP" | "BOTTOM";
 
@@ -72,8 +73,8 @@
   const title = titleEditStore(node.title, (title) =>
     dispatch("changed", copyWith(node, { title })),
   );
-  $: editableTitle = title.editableTitle;
 
+  const weightDialogCtx = getContext<WeightDialogContext>("weight-dialog");
   const contextMenuContext = getContext<ContextMenuHandle>("context-menu");
   const configurationDialogCtx = getContext<ConfigurationDialogContext>(
     "configuration-dialog",
@@ -91,22 +92,16 @@
     easing: cubicOut,
   });
 
-  $: progressInterpreted = interpretWeight({
-    weight: $progress,
-    weightInterpretation: configuration?.weightInterpretation || "none",
-  });
+  $: progressInterpreted = interpretWeight(
+    configuration.weightInterpretation,
+    $progress,
+  );
 
   $: progress.set(getWeightedProgress(node));
-  $: weight = weightStore(
-    node.weight || 0,
-    configuration.weightInterpretation,
-    (weight) => dispatch("changed", copyWith(node, { weight })),
-  );
-  $: editableWeight = weight.editableWeight;
 
   const onClick = () => {
-    if (node.children) showChildren = !showChildren;
-    if (node.isDone !== undefined) {
+    if (node.type === NodeType.childful) showChildren = !showChildren;
+    if (node.type === NodeType.checkbox) {
       dispatch("changed", copyWith(node, { isDone: !node.isDone }));
     }
   };
@@ -175,23 +170,44 @@
 
   const contextMenuCallbacks: Record<string, () => void> = {
     rename: () => title.onEditStarted(),
-    "toggle-children": () => {
-      if (node.children) {
-        dispatch(
-          "changed",
-          copyWith(node, {
-            children: undefined,
-            isDone: false,
-            weight: 1,
-          }),
-        );
-      } else {
+    "make-childful": () => {
+      if (node.type !== NodeType.childful) {
         dispatch(
           "changed",
           copyWith(node, {
             children: [],
             isDone: undefined,
             weight: undefined,
+            progress: undefined,
+            type: NodeType.childful,
+          }),
+        );
+      }
+    },
+    "make-checkbox": () => {
+      if (node.type !== NodeType.checkbox) {
+        dispatch(
+          "changed",
+          copyWith(node, {
+            children: undefined,
+            isDone: false,
+            weight: node.weight ?? 1.0,
+            progress: undefined,
+            type: NodeType.checkbox,
+          }),
+        );
+      }
+    },
+    "make-slider": () => {
+      if (node.type !== NodeType.slider) {
+        dispatch(
+          "changed",
+          copyWith(node, {
+            children: undefined,
+            isDone: undefined,
+            weight: node.weight ?? 1.0,
+            progress: 0.0,
+            type: NodeType.slider,
           }),
         );
       }
@@ -202,6 +218,7 @@
         plusChildren(node, [
           makeNodeValid({
             title: newChildTitle(node),
+            type: NodeType.checkbox,
             isDone: false,
             weight: 1,
             configuration: {},
@@ -220,9 +237,27 @@
     },
     delete: () => dispatch("changed", null),
     "toggle-all": () => dispatch("changed", setIsDone(node, !getIsDone(node))),
-    "edit-weight": () => weight.onStartEditing(),
+    "edit-weight": () =>
+      weightDialogCtx.open(
+        {
+          value: node.weight || 0,
+          interpretation: configuration.weightInterpretation,
+        },
+        defaultConfig.weightInterpretation,
+        (result) => {
+          dispatch(
+            "changed",
+            copyWith(node, {
+              configuration: {
+                ...node.configuration,
+                weightInterpretation: result.interpretation,
+              },
+              weight: result.value,
+            }),
+          );
+        },
+      ),
     configuration: () => {
-      console.log({ configuring: true, node });
       configurationDialogCtx.open(node.configuration, true, (value) =>
         dispatch(
           "changed",
@@ -251,20 +286,29 @@
       // Add if childless
       .addAllIf(
         [
-          { id: "toggle-children", label: "Make childful" },
           { id: "edit-weight", label: "Edit weight" },
+          { id: "make-childful", label: "Make childful" },
         ],
-        !node.children,
+        node.type !== NodeType.childful,
+      )
+      // Add if not checkbox
+      .addAllIf(
+        [{ id: "make-checkbox", label: "Make checkbox" }],
+        node.type !== NodeType.checkbox,
+      )
+      // Add if not slider
+      .addAllIf(
+        [{ id: "make-slider", label: "Make slider" }],
+        node.type !== NodeType.slider,
       )
       // add if childful
       .addAllIf(
         [
-          { id: "toggle-children", label: "Make childless" },
           { id: "toggle-all", label: "Toggle all" },
           { id: "add-child", label: "New child" },
           { id: "sort", label: "Sort" },
         ],
-        !!node.children,
+        node.type === NodeType.childful,
       )
       .addAllIf(
         [
@@ -304,38 +348,64 @@
       class="content"
       on:click|stopPropagation={onClick}
       on:contextmenu|preventDefault|stopPropagation={onContextMenu}
+      transition:slide
     >
       <div class="head" class:headless>
         <div class="title">
-          {#if node.isDone !== undefined}
+          {#if node.type === NodeType.checkbox}
             <CustomCheckbox
-              checked={node.isDone}
+              checked={node.isDone || false}
               stopColorA={configuration.theme.highlightColorA}
               stopColorB={configuration.theme.highlightColorB}
             />
-          {:else}
+          {:else if node.type === NodeType.childful}
             <ArrowRight isRotated={showChildren} />
+          {:else}
+            <div class="logo">
+              <LogoSvg
+                offset={$progress * 100}
+                progress={$progress * 100}
+                stopColorA={configuration.theme.highlightColorA}
+                stopColorB={configuration.theme.highlightColorB}
+              />
+            </div>
           {/if}
           <div class="title-text">
             <div class="label" />
-            {#if $title.canEdit}
-              <div class="editing-input" on:click|stopPropagation>
-                <input
-                  bind:value={$editableTitle}
-                  on:submit={() => title.onEditDone()}
-                />
-                <button on:click={() => title.onEditDone()}>Ok</button>
-              </div>
-            {:else}
-              <p>{node.title}</p>
+            <EditableTextfield
+              isEditing={$title.canEdit}
+              onEditStart={() => title.onEditStarted()}
+              onEditEnd={(v) => {
+                title.editableTitle.set(v);
+                title.onEditDone();
+              }}
+              value={node.title}
+            />
+            {#if node.type === NodeType.slider}
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={node.progress}
+                style:accent-color={configuration.theme.highlightColorA}
+                on:input={(e) => {
+                  console.log("Change!! ");
+                  console.log(e.target.value);
+                  dispatch(
+                    "changed",
+                    copyWith(node, {
+                      progress: Number.parseFloat(e.target.value),
+                    }),
+                  );
+                }}
+              />
             {/if}
+            <div class="label-padding" />
+
             <div class="child-labels">
               {#each getChildrenLabels(node, getUndoneLabels) as labelColor (labelColor)}
-                <div
-                  class="short-label"
-                  style:background-color={labelColor}
-                  transition:scale
-                />
+                <div class="short-label" style:background-color={labelColor} />
               {/each}
             </div>
           </div>
@@ -347,32 +417,15 @@
       </div>
       <div class="weights">
         <p>{progressInterpreted}</p>
-
-        {#if $weight.isEditing}
-          <div class="weight-editor">
-            <div on:click|stopPropagation>
-              <input bind:value={$editableWeight} type="number" />
-              <p>{$weight.editableInterpreted}</p>
-            </div>
-            <button on:click={weight.onFinishEditing}>Ok</button>
-          </div>
-        {:else}
-          <p>
-            {interpretWeight({
-              weight: getTotalWeight(node),
-              weightInterpretation: configuration.weightInterpretation,
-            })}
-          </p>
-        {/if}
+        <p>
+          {interpretWeight(
+            configuration.weightInterpretation,
+            getTotalWeight(node),
+          )}
+        </p>
       </div>
       {#if node.children && (showChildren || headless)}
-        <div
-          class="children"
-          transition:slide={{
-            duration: 200,
-            easing: cubicInOut,
-          }}
-        >
+        <div class="children">
           {#if node.children.length === 0}
             <p>No sub-tasks yet...</p>
           {/if}
@@ -386,6 +439,26 @@
               defaultConfig={configuration}
             />
           {/each}
+          <button
+            class="add-child"
+            on:click|stopPropagation={() =>
+              dispatch(
+                "changed",
+                plusChildren(node, [
+                  makeNodeValid({
+                    title: newChildTitle(node),
+                    type: NodeType.checkbox,
+                    isDone: false,
+                    weight: 1,
+                    configuration: {},
+                  }),
+                ]),
+              )}
+            transition:slide
+          >
+            <div />
+            <span>+</span>
+          </button>
         </div>
       {/if}
     </div>
@@ -424,6 +497,10 @@
     border-radius: 2rem;
     background-color: var(--label-color, transparent);
   }
+  .label-padding {
+    width: 50px;
+    height: 10px;
+  }
 
   .short-label {
     width: 10px;
@@ -447,6 +524,11 @@
 
   .title {
     display: flex;
+    flex: 1;
+  }
+
+  .title-text {
+    flex: 1;
   }
 
   .weights {
@@ -465,16 +547,60 @@
     margin-left: 2rem;
   }
 
-  .editing-input {
-    display: flex;
-    flex: 1;
+  button.add-child {
+    background-color: transparent;
+    border: none;
+
+    margin: auto;
+    padding: 0px;
+
+    width: 3rem;
+    height: 3rem;
+    padding: 0.5rem;
+
+    display: grid;
+    grid-template-rows: 1fr;
+
+    font-size: 1.5rem;
   }
 
-  .editing-input > input {
-    flex: 1;
+  button.add-child > div {
+    width: 100%;
+    height: 100%;
+    background-color: var(--accent-b);
+    z-index: 1;
+
+    transform: scale(0);
+
+    transition-property: transform, border-radius;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
   }
 
-  .weight-editor {
+  button.add-child:hover > div {
+    transform: scale(1) translate(0px);
+    border-radius: 1rem;
+  }
+
+  button.add-child > span {
+    z-index: 2;
+    margin: auto;
+  }
+
+  button.add-child > * {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  div.logo {
+    padding: 0.25rem;
+    width: 20px;
     display: flex;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  input[type="range"] {
+    width: 80%;
   }
 </style>

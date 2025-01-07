@@ -1,12 +1,11 @@
 <script lang="ts">
   import { setContext } from "svelte";
-  import {
-    DEFAULT_THEME,
-    WEIGHT_INTERPRETATIONS,
-  } from "../ProgressNode/constants";
+  import { DEFAULT_THEME } from "../ProgressNode/constants";
   import type { NodeConfiguration } from "../ProgressNode/types";
   import type { ConfigurationDialogContext } from "../types";
-  import getThemes from "../util/getThemes";
+  import { getThemes } from "../util";
+  import { getWeightInterpretations } from "../util";
+  import RaisedButton from "./RaisedButton.svelte";
 
   let currentValues: NodeConfiguration = {};
 
@@ -19,7 +18,8 @@
       currentValues = {
         colorLabel: currentValues.colorLabel || "transparent",
         theme: currentValues.theme || DEFAULT_THEME,
-        weightInterpretation: currentValues.weightInterpretation || "none",
+        weightInterpretation:
+          currentValues.weightInterpretation || getWeightInterpretations()[0],
       };
     }
   }
@@ -33,12 +33,12 @@
       onDone = callback;
 
       if (
-        isUnsetAllowed &&
+        !isUnsetAllowed &&
         (!currentValues.colorLabel ||
           !currentValues.theme ||
           !currentValues.weightInterpretation)
       ) {
-        throw "Error: all fields must be set if unset is allowed";
+        throw "Error: all fields must be set if unset is not allowed";
       }
 
       dialog.showModal();
@@ -52,7 +52,6 @@
       <label for="weight-interpretation"
         >Weight interpretation:
         <span class="grow" />
-        {console.log({ currentValues })}
         <select
           name="weight-interpretation"
           bind:value={currentValues.weightInterpretation}
@@ -60,11 +59,14 @@
           {#if isUnsetAllowed}
             <option value={undefined}>Inherit</option>
           {/if}
-          {#each WEIGHT_INTERPRETATIONS as weightInterpretation}
-            <option value={weightInterpretation}>{weightInterpretation}</option>
+          {#each getWeightInterpretations() as weightInterpretation}
+            <option value={weightInterpretation}>
+              {weightInterpretation.name}
+            </option>
           {/each}
         </select>
       </label>
+      <div class="spacer" />
       <label for="theme"
         >Theme
         <span class="grow" />
@@ -81,6 +83,7 @@
           </select>
         {/await}
       </label>
+      <div class="spacer" />
       <label for="label-color">
         Label:
         <span class="grow" />
@@ -100,7 +103,7 @@
     </div>
 
     <div class="buttons">
-      <button
+      <RaisedButton
         type="button"
         on:click={() => {
           onDone(currentValues);
@@ -108,8 +111,10 @@
         }}
       >
         Submit
-      </button>
-      <button type="button" on:click={() => dialog.close()}>Cancel</button>
+      </RaisedButton>
+      <RaisedButton type="button" on:click={() => dialog.close()}
+        >Cancel</RaisedButton
+      >
     </div>
   </form>
 </dialog>
@@ -117,6 +122,10 @@
 <slot />
 
 <style>
+  div.spacer {
+    height: 1rem;
+  }
+
   label {
     display: flex;
   }
@@ -124,6 +133,10 @@
   label .grow {
     flex: 1;
     min-width: 2rem;
+  }
+
+  select {
+    width: 5rem;
   }
 
   select.label-color-select option {
@@ -146,18 +159,5 @@
     padding-top: 1rem;
 
     justify-content: space-around;
-  }
-
-  button {
-    border: none;
-    color: white;
-    background-color: #2f99fc;
-    font-weight: bold;
-    padding: 0.5rem;
-    border-radius: 10px;
-  }
-
-  button:hover {
-    background-color: #2a87ff;
   }
 </style>

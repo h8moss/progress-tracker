@@ -1,13 +1,5 @@
 import type { NodeTheme } from "./types";
 
-export const WEIGHT_INTERPRETATIONS = [
-  "none",
-  "seconds",
-  "centimeters",
-  "grams",
-  "bytes",
-] as const;
-
 export const DEFAULT_THEME: NodeTheme = {
   name: "Light",
   backgroundColor: "#fff",

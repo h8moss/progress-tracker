@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { appWindow } from "@tauri-apps/api/window";
+  import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
   import { onMount, setContext, onDestroy } from "svelte";
   import type {
     ContextMenuHandle,
     ContextMenuItem,
     ContextMenuItemHandler,
   } from "../types";
-  import { globalShortcut } from "@tauri-apps/api";
   import { ContextMenuItems } from "../util";
+  import * as globalShortcut from "@tauri-apps/plugin-global-shortcut";
+  const appWindow = getCurrentWebviewWindow();
 
   const MENU_WIDTH = 200;
   const MENU_ITEM_HEIGHT = 35;
@@ -112,7 +113,8 @@
     flex-direction: column;
 
     /* #18 from (here)[https://getcssscan.com/css-box-shadow-examples] */
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+    box-shadow:
+      rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
       rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 
     border-radius: 10px;
@@ -141,6 +143,6 @@
 
     cursor: default;
 
-    z-index: 50;
+    z-index: 500;
   }
 </style>

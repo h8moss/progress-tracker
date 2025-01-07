@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { appDataDir, join } from "@tauri-apps/api/path";
 
 interface Params {
@@ -6,7 +6,7 @@ interface Params {
   path: string;
 }
 
-const removeData = async ({title, path}: Params): Promise<void> => {
+const removeData = async ({ title, path }: Params): Promise<void> => {
   const dataDir = await appDataDir();
   const joinedPath = await join(dataDir, "\\recent.json");
   const currentDataStr = (await invoke("read_file", {

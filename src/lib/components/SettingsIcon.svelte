@@ -11,7 +11,7 @@
   version="1.1"
   preserveAspectRatio="xMidYMid meet"
 >
-  <title>settings-line</title>
+  <title>Settings</title>
   <path
     d="M18.1,11c-3.9,0-7,3.1-7,7s3.1,7,7,7c3.9,0,7-3.1,7-7S22,11,18.1,11z M18.1,23c-2.8,0-5-2.2-5-5s2.2-5,5-5c2.8,0,5,2.2,5,5S20.9,23,18.1,23z"
   /><path

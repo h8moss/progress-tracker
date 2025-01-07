@@ -1,6 +1,5 @@
 import type { Readable } from "svelte/store";
 import type { ProgressNode } from "./ProgressNode";
-import type { WEIGHT_INTERPRETATIONS } from "./ProgressNode/constants";
 import type { NodeConfiguration } from "./ProgressNode/types";
 import type ContextMenuItems from "./util/ContextMenuItems";
 
@@ -30,7 +29,29 @@ export type ConfigurationDialogContext = {
   ) => void;
 };
 
-export type WeightInterpretation = (typeof WEIGHT_INTERPRETATIONS)[number];
+export type WeightData = {
+  title: string;
+  abbreviation: string;
+  baseValue: number;
+}
+
+export type WeightInterpretation = {
+  name: string;
+  data: WeightData[];
+
+  timeLike: boolean;
+}
+
+export type WeightDialogContext = {
+  open: (
+    config: {
+      value: number,
+      interpretation?: WeightInterpretation
+    },
+    parentInterpretation: WeightInterpretation,
+    callback: (result: { value: number, interpretation?: WeightInterpretation }) => unknown,
+  ) => void;
+}
 
 export type ContextMenuItem = {
   label: string;
