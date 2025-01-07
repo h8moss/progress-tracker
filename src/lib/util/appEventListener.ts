@@ -10,6 +10,7 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { confirm } from "@tauri-apps/plugin-dialog";
+import { NodeType } from "../ProgressNode/types";
 const appWindow = getCurrentWebviewWindow()
 
 interface Args {
@@ -17,6 +18,16 @@ interface Args {
   isLoading: Writable<number | null>;
   path: Writable<string | null>;
   needsSave: Writable<boolean>;
+}
+
+const confirmQuit = async (needsSave: Writable<boolean>): Promise<boolean> => {
+  if (get(needsSave)) {
+    return await confirm("Save before closing?", {
+      cancelLabel: "No",
+      okLabel: "Yes",
+    });
+  }
+  return true;
 }
 
 const progressFilters = [
@@ -41,9 +52,11 @@ const appEventListener = async ({
       progressNode.set(
         makeNodeValid({
           title: "Untitled",
+          type: NodeType.childful,
           configuration: {},
           children: [
             {
+              type: NodeType.checkbox,
               title: "Task 1",
               weight: 1,
               isDone: false,
@@ -71,12 +84,7 @@ const appEventListener = async ({
         });
         isLoading.set(null);
         if (result) {
-          progressNode.set({
-            ...result,
-            configuration: {
-              weightInterpretation: "seconds",
-            },
-          });
+          progressNode.set(result);
         }
         path.set(null);
         needsSave.set(true);
@@ -121,16 +129,15 @@ const appEventListener = async ({
         needsSave.set(false);
       }
     }),
+    await listen("quit", async (event) => {
+      if (await confirmQuit(needsSave)) {
+        await emit("get-save-path");
+      }
+      emit('quit-true', '');
+    }),
     await appWindow.onCloseRequested(async (event) => {
-      if (get(needsSave)) {
-        const confirmed = await confirm("Save before closing?", {
-          cancelLabel: "No",
-          okLabel: "Yes",
-        });
-
-        if (confirmed) {
-          await emit("get-save-path");
-        }
+      if (await confirmQuit(needsSave)) {
+        await emit('get-save-path')
       }
     }),
   ];
