@@ -83,7 +83,6 @@ Personalize your experience with custom color schemes.
     `path/to/progress-tracker/src-tauri/binaries`
     and rename it to:
     `ffprobe-{TARGET TRIPLE FROM PREVIOUS STEP}`
-    if on windows, remove the .exe
 
 6. Install dependencies:
    ```bash
