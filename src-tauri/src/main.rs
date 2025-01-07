@@ -6,12 +6,10 @@ use std::str;
 use std::{
     fs::{create_dir, read_dir, read_to_string, write},
     path::Path,
-    process::Command,
 };
 use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
 use tauri::{Emitter, Listener};
 use tauri_plugin_shell::ShellExt;
-use tauri_plugin_shell::process::CommandEvent;
 
 #[tauri::command]
 async fn write_file(path: String, value: String) -> Result<(), String> {
@@ -77,26 +75,32 @@ fn read_folder(path: String) -> Vec<String> {
     entries
 }
 
-const CREATE_NO_WINDOW: u32 = 0x08000000;
-
 #[tauri::command]
-fn get_video_duration(path: String) -> f32 {
+async fn get_video_duration(app: tauri::AppHandle, path: String) -> f32 {
     let re = Regex::new(r"duration=(?<dur>\d+)").unwrap();
-    let mut sidecar_command = app.shell().sidecar("ffprobe").unwrap();
-    // let mut cmd = Command::new("ffprobe");
+    let sidecar_command = app.shell().sidecar("ffprobe").unwrap();
     let command = sidecar_command.args([path.as_str(), "-show_entries", "format=duration", "-v", "0"]);
 
-    command.creation_flags(CREATE_NO_WINDOW);
-
-    let result = match command.output() {
+    let result = match command.output().await {
         Ok(output) => match str::from_utf8(&output.stdout) {
-            Ok(s) => match re.captures(s) {
-                Some(caps) => caps["dur"].parse().unwrap(),
-                None => 0.0,
+            Ok(s) => {
+                match re.captures(s) {
+                    Some(caps) => caps["dur"].parse().unwrap(),
+                    None => {
+                        println!("NONE");
+                        0.0
+                    },
+                }
             },
-            Err(_) => 0.0,
+            Err(e) => {
+                println!("error: {e:?}");
+                0.0
+            }
         },
-        Err(_) => 0.0,
+        Err(e) => {
+            println!("error: {e:?}");
+            0.0
+        },
     };
 
     result
