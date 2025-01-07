@@ -1,0 +1,19 @@
+{
+  "identifier": "desktop-capability",
+  "platforms": [
+    "macOS",
+    "windows",
+    "linux"
+  ],
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "cli:default",
+    "fs:default",
+    "dialog:default",
+    "global-shortcut:default",
+    "shell:default",
+    "shell:default"
+  ]
+}

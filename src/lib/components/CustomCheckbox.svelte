@@ -15,15 +15,16 @@
   $: $progress = checked ? 100 : 0;
 </script>
 
-<div>
+<div class="logo">
   <LogoSvg offset={0} progress={$progress} {stopColorA} {stopColorB} />
 </div>
 
 <style>
-  div {
+  div.logo {
     padding: 0.25rem;
     width: 20px;
     display: flex;
     justify-content: center;
+    cursor: pointer;
   }
 </style>

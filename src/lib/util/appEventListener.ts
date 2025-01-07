@@ -1,21 +1,33 @@
 import { emit, listen, type Event } from "@tauri-apps/api/event";
 import { get, type Writable } from "svelte/store";
 import type { ProgressNode } from "../ProgressNode";
-import { open, save } from "@tauri-apps/api/dialog";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import {
   makeNodeValid,
   nodeFromDir,
   nodeFromJsonPath,
 } from "../ProgressNode/util";
-import { invoke } from "@tauri-apps/api";
-import { appWindow } from "@tauri-apps/api/window";
-import { confirm } from "@tauri-apps/api/dialog";
+import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { confirm } from "@tauri-apps/plugin-dialog";
+import { NodeType } from "../ProgressNode/types";
+const appWindow = getCurrentWebviewWindow()
 
 interface Args {
   progressNode: Writable<ProgressNode | null>;
   isLoading: Writable<number | null>;
   path: Writable<string | null>;
   needsSave: Writable<boolean>;
+}
+
+const confirmQuit = async (needsSave: Writable<boolean>): Promise<boolean> => {
+  if (get(needsSave)) {
+    return await confirm("Save before closing?", {
+      cancelLabel: "No",
+      okLabel: "Yes",
+    });
+  }
+  return true;
 }
 
 const progressFilters = [
@@ -40,9 +52,11 @@ const appEventListener = async ({
       progressNode.set(
         makeNodeValid({
           title: "Untitled",
+          type: NodeType.childful,
           configuration: {},
           children: [
             {
+              type: NodeType.checkbox,
               title: "Task 1",
               weight: 1,
               isDone: false,
@@ -70,12 +84,7 @@ const appEventListener = async ({
         });
         isLoading.set(null);
         if (result) {
-          progressNode.set({
-            ...result,
-            configuration: {
-              weightInterpretation: "seconds",
-            },
-          });
+          progressNode.set(result);
         }
         path.set(null);
         needsSave.set(true);
@@ -120,16 +129,15 @@ const appEventListener = async ({
         needsSave.set(false);
       }
     }),
+    await listen("quit", async (event) => {
+      if (await confirmQuit(needsSave)) {
+        await emit("get-save-path");
+      }
+      emit('quit-true', '');
+    }),
     await appWindow.onCloseRequested(async (event) => {
-      if (get(needsSave)) {
-        const confirmed = await confirm("Save before closing?", {
-          cancelLabel: "No",
-          okLabel: "Yes",
-        });
-
-        if (confirmed) {
-          await emit("get-save-path");
-        }
+      if (await confirmQuit(needsSave)) {
+        await emit('get-save-path')
       }
     }),
   ];
