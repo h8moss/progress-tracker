@@ -79,11 +79,13 @@ fn read_folder(path: String) -> Vec<String> {
 async fn get_video_duration(app: tauri::AppHandle, path: String) -> f32 {
     let re = Regex::new(r"duration=(?<dur>\d+)").unwrap();
     let sidecar_command = app.shell().sidecar("ffprobe").unwrap();
-    let command = sidecar_command.args([path.as_str(), "-show_entries", "format=duration", "-v", "0"]);
+    let command = sidecar_command.args([path.as_str(), "-show_entries", "format=duration"]);
 
-    let result = match command.output().await {
+       let result = match command.output().await {
         Ok(output) => match str::from_utf8(&output.stdout) {
             Ok(s) => {
+                println!("stdout: {:?}", s);
+                println!("stderr: {:?}", str::from_utf8(&output.stderr));
                 match re.captures(s) {
                     Some(caps) => caps["dur"].parse().unwrap(),
                     None => {
