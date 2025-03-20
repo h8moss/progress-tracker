@@ -1,8 +1,8 @@
 import { NodeType, type ProgressNode } from "../types";
-import { readDir, type FileEntry } from "@tauri-apps/plugin-fs";
+import { readDir, type DirEntry } from "@tauri-apps/plugin-fs";
 import generateRandomID from "./generateRandomID";
 import { invoke } from "@tauri-apps/api/core";
-import { sep } from "@tauri-apps/api/path";
+import { join, sep } from "@tauri-apps/api/path";
 import naturalCompare from "natural-compare-lite";
 import { getWeightInterpretations } from "../../util";
 
@@ -15,13 +15,13 @@ const isVideoFile = (p: string): boolean => {
   );
 };
 
-const getTotalFileCount = (entries: FileEntry[]): number => {
+const getTotalFileCount = async (entries: DirEntry[], parent: string): Promise<number> => {
   let count = 0;
   for (const entry of entries) {
-    console.log({ entry });
-    const isFile = entry.children === undefined;
+    const path = await join(parent, entry.name)
+    const isFile = entry.isFile;
     if (isFile && isVideoFile(entry.name)) count++;
-    else if (!isFile) count += getTotalFileCount(entry.children!);
+    else if (!isFile) count += await getTotalFileCount(await readDir(path), path);
   }
 
   return count;
@@ -43,23 +43,30 @@ const getBaseName = (
 };
 
 const getVideoFileWeight = async (path: string): Promise<number> => {
-  console.log({ path, vfw: true });
-  return Math.floor((await invoke("get_video_duration", { path })) as number);
+  const duration = Math.floor((await invoke("get_video_duration", { path })) as number);
+  console.log({ path, vfw: true, duration });
+  return duration
 };
 
 const nodesFromDirs = async (
-  entries: FileEntry[],
+  entries: DirEntry[],
   options: { onFileNode?: () => unknown, parentPath: string }
 ): Promise<ProgressNode[]> => {
   let results: ProgressNode[] = [];
+  console.log(entries);
 
   for (const entry of entries) {
     console.log({ entry });
     const isFile = entry.isFile;
     const title = entry.name;
 
+    console.log({
+      isFile, title, entry
+    })
+
+    const path = await join(options.parentPath, entry.name);
+
     if (isFile && isVideoFile(entry.name)) {
-      const path = options.parentPath + sep() + entry.name;
       const weight = await getVideoFileWeight(path);
 
       if (options.onFileNode) options.onFileNode();
@@ -80,7 +87,9 @@ const nodesFromDirs = async (
         generateRandomID({
           type: NodeType.childful,
           title,
-          children: await nodesFromDirs(entry.children!, options),
+          children: await nodesFromDirs(await readDir(path), {
+            onFileNode: options.onFileNode, parentPath: path
+          }),
           configuration: {}
         }),
       ];
@@ -99,7 +108,7 @@ const nodeFromDir = async (
   const children = await readDir(path);
 
   const title = getBaseName(path, { ignoreExtension: true });
-  const totalCount = getTotalFileCount(children);
+  const totalCount = await getTotalFileCount(children, path);
 
   let progress = 0;
 
