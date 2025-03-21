@@ -16,12 +16,12 @@
       join(dataDir, "\\recent.json").then((path) =>
         invoke("read_file", { path }).then((value) => {
           return JSON.parse((value as string) || "[]");
-        })
-      )
+        }),
+      ),
     );
 </script>
 
-<div>
+<div class="main-content">
   {#await recent}
     <p>...</p>
   {:then result}
@@ -39,8 +39,8 @@
               recent = new Promise((resolve) => {
                 resolve(
                   result.map((v) =>
-                    v == undefined || v.path === item.path ? undefined : v
-                  )
+                    v == undefined || v.path === item.path ? undefined : v,
+                  ),
                 );
               });
               removeData({ title: item.title, path: item.path });
@@ -50,6 +50,7 @@
           <p>{item.title}</p>
           <p class="path">{item.path}</p>
         </button>
+        <div class="divider" />
       {/if}
     {/each}
     {#if result.length === 0}
@@ -59,7 +60,7 @@
 </div>
 
 <style>
-  div {
+  div.main-content {
     display: flex;
     flex-direction: column;
     padding: 1rem;
@@ -68,11 +69,10 @@
     justify-content: space-between;
   }
 
-  div button {
+  div.main-content button {
     background-color: transparent;
     border: none;
     padding: 0.5rem;
-    border-bottom: #202020 1px solid;
     margin: auto;
     border-radius: 0.2rem;
 
@@ -98,7 +98,13 @@
     color: #808080;
   }
 
-  div button:hover {
+  div.divider {
+    background-color: #aaa;
+    width: 100%;
+    height: 2px;
+  }
+
+  div.main-content button:hover {
     border-color: var(--accent);
     background-color: #eee;
   }
