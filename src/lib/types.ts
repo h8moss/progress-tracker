@@ -40,6 +40,7 @@ export type WeightInterpretation = {
   data: WeightData[];
 
   timeLike: boolean;
+  legacyName?: string;
 }
 
 export type WeightDialogContext = {

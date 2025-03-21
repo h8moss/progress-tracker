@@ -1,12 +1,28 @@
-import type { JSONValue } from "src/lib/types";
+import type { JSONValue } from "../../types";
+import { getWeightInterpretations } from "../../util";
 import { NodeType, type NodeConfiguration, type ProgressNode } from "../types";
 import makeNodeValid from "./makeNodeValid";
 
 const configObjectAsConfiguration = (
   configuration: JSONValue
 ): NodeConfiguration | null => {
+  if (configuration === null) return null;
   if (typeof configuration !== "object") return null;
   if (Array.isArray(configuration)) return null;
+  if (typeof configuration.weightInterpretation === "string") {
+
+    const interpretations = getWeightInterpretations();
+    let found = false;
+    for (const interpretation of interpretations) {
+      if (interpretation.name === configuration.weightInterpretation || interpretation.legacyName === configuration.weightInterpretation) {
+        configuration.weightInterpretation = interpretation;
+        found = true;
+      }
+    }
+    if (!found) {
+      configuration.weightInterpretation = interpretations[0];
+    }
+  }
 
   return configuration;
 };
