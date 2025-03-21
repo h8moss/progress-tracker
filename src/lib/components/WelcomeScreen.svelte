@@ -136,7 +136,7 @@
 
     text-align: justify;
 
-    padding: 0.25rem 0.25;
+    padding: 0.25rem 0px;
 
     transition: 200ms cubic-bezier(0.165, 0.84, 0.44, 1);
     transition-property: padding, width;
