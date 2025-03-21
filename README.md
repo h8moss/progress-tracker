@@ -135,13 +135,10 @@ We welcome contributions! Here's how you can help:
 
 ## 🗺️ Roadmap
 
-- [ ] Nicer UI
-- [x] Automatic updates
-- [ ] Slider tasks
 - [ ] Custom weight units
 - [ ] Setting default theme
 - [ ] Duplicating tasks
-- [ ] Add ffmpeg to the relase so it is not a requirement
+- [ ] Linux / MacOS build
 
 ## ❓ Frequently Asked Questions
 
