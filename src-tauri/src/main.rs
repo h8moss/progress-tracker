@@ -81,7 +81,7 @@ async fn get_video_duration(app: tauri::AppHandle, path: String) -> f32 {
     let sidecar_command = app.shell().sidecar("ffprobe").unwrap();
     let command = sidecar_command.args([path.as_str(), "-show_entries", "format=duration"]);
 
-       let result = match command.output().await {
+    let result = match command.output().await {
         Ok(output) => match str::from_utf8(&output.stdout) {
             Ok(s) => {
                 println!("stdout: {:?}", s);
@@ -91,9 +91,9 @@ async fn get_video_duration(app: tauri::AppHandle, path: String) -> f32 {
                     None => {
                         println!("NONE");
                         0.0
-                    },
+                    }
                 }
-            },
+            }
             Err(e) => {
                 println!("error: {e:?}");
                 0.0
@@ -102,14 +102,15 @@ async fn get_video_duration(app: tauri::AppHandle, path: String) -> f32 {
         Err(e) => {
             println!("error: {e:?}");
             0.0
-        },
+        }
     };
 
     result
 }
 
 fn main() {
-   tauri::Builder::default()
+    tauri::Builder::default()
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_cli::init())
@@ -122,14 +123,14 @@ fn main() {
             write_file,
             read_folder,
         ])
-       .setup(|app| {
+        .setup(|app| {
             app.listen("quit-true", |event| {
                 std::process::exit(match event.payload().parse() {
                     Err(_) => 0,
                     Ok(num) => num,
                 });
             });
-           let file = SubmenuBuilder::new(app, "File")
+            let file = SubmenuBuilder::new(app, "File")
                 .items(&[
                     &MenuItemBuilder::with_id("new", "New")
                         .accelerator("Ctrl+N")
