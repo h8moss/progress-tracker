@@ -22,6 +22,7 @@
   },
   "productName": "Progress Tracker",
   "mainBinaryName": "Progress Tracker",
+
   "version": "2.1.0",
   "identifier": "com.h8m0ss.progress-tracker",
   "plugins": {
