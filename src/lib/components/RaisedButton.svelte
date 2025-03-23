@@ -12,6 +12,7 @@
     background-color: #2f99fc;
     font-weight: bold;
     padding: 0.5rem;
+    margin: 0.5rem;
     border-radius: 10px;
 
     /* Number 2 of https://getcssscan.com/css-box-shadow-examples*/
