@@ -11,6 +11,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import { NodeType } from "../ProgressNode/types";
+
 const appWindow = getCurrentWebviewWindow()
 
 interface Args {
@@ -67,6 +68,7 @@ const appEventListener = async ({
       );
       isLoading.set(null);
       path.set(null);
+      console.log("NEEDED SAVE 1");
       needsSave.set(true);
     }),
     await listen("new-folder", async (_) => {
@@ -87,6 +89,7 @@ const appEventListener = async ({
           progressNode.set(result);
         }
         path.set(null);
+        console.log("NEEDED SAVE 2");
         needsSave.set(true);
       }
     }),

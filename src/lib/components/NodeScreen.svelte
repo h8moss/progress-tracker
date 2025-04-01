@@ -36,8 +36,9 @@
   $: $titleStore = $node.title;
   $: {
     if ($progressNode) {
+      console.log("NEEDED SAVE 4 + " + $progressNode.title === $titleStore);
+      $needsSave = $progressNode.title === $titleStore;
       $progressNode = { ...$progressNode, title: $titleStore };
-      $needsSave = true;
     }
   }
 
@@ -49,7 +50,10 @@
 
   $: tweenWeightedProgress.set(weightedProgress);
 
-  $: if ($node.title !== initialTitle) $needsSave = true;
+  $: if ($node.title !== initialTitle) {
+    console.log("NEEDED SAVE 3");
+    $needsSave = true;
+  }
 
   $: configuration = {
     ...structuredClone(defaultConfig),
@@ -90,6 +94,8 @@
             (result) => {
               if ($progressNode) {
                 $progressNode.configuration = result;
+
+                console.log("NEEDED SAVE 5");
                 $needsSave = true;
               }
             },
@@ -114,7 +120,10 @@
       isFirst={() => false}
       node={$node}
       on:changed={(event) => {
+        console.log("I was changed");
         $progressNode = event.detail;
+
+        console.log("NEEDED SAVE 6");
         $needsSave = true;
         console.log({ $progressNode });
       }}
