@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { check, Update } from "@tauri-apps/plugin-updater";
   import { relaunch } from "@tauri-apps/plugin-process";
-  import ProgressIndicator from "./ProgressIndicator.svelte";
   import LogoSvg from "./LogoSVG.svelte";
   import RaisedButton from "./RaisedButton.svelte";
+  import { writable } from "svelte/store";
 
   let updateStatus:
     | "before-check"
@@ -18,6 +18,21 @@
   $: requestUpdate = updateStatus === "request-update";
   $: updating = updateStatus === "updating";
   $: doneUpdating = updateStatus === "done-updating";
+
+  let offset = writable(0);
+  let timer: NodeJS.Timer | null = null;
+
+  onMount(() => {
+    timer = setInterval(() => {
+      offset.update((v) => (v - 0.5) % 100);
+    }, 20);
+  });
+
+  onDestroy(() => {
+    if (timer !== null) {
+      clearInterval(timer);
+    }
+  });
 
   let update: Update | null = null;
 
@@ -65,7 +80,7 @@
 {#if beforeCheck}
   <div class="logo">
     <LogoSvg
-      offset={0}
+      offset={$offset}
       progress={50}
       stopColorA="#2d99fc"
       stopColorB="#2a87ff"
