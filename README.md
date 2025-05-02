@@ -21,15 +21,13 @@ A simple, open-source TODO list and progress tracker for Windows. Built with ❤
 
 ## 🌟 Features
 
-### 📊 Nested Tasks
-Organize your work with hierarchical task structures. Break down complex projects into manageable subtasks.
-
-![Nested Tasks Demo](https://github.com/h8moss/progress-tracker/assets/43828996/8caff440-8763-409a-b100-11ae87fd14fd)
+### 📊 Nested and slider tasks
+Organize your work with hierarchical task structures. Break down complex projects into manageable subtasks and keep exact progress on each of them.
+![Nested and slider tasks demo](https://github.com/user-attachments/assets/39b6dd4f-aae9-4f2c-b2e9-5a5f3cd598b0)
 
 ### ⚖️ Task Weights
 Assign importance to your tasks. Heavier tasks contribute more to your overall progress.
-
-![Task Weights Demo](https://github.com/h8moss/progress-tracker/assets/43828996/24107f7d-bb17-4acd-bc13-6db4cff461c7)
+![Task weights demo](https://github.com/user-attachments/assets/35c0c870-9e79-4ce3-ab2e-be5d9f3fafb5)
 
 ### 🔢 Weight Interpretation
 Weights can be interpreted and rendered as different units, making it easier to understand task importance in various contexts.
