@@ -51,7 +51,7 @@ Personalize your experience with custom color schemes.
 2. Download the latest version of the application.
 3. Run the installer and follow the prompts.
 
-### Building for source (Windows, Linux and MacOS)
+### Building from source (Windows, Linux and MacOS)
 > [!WARNING]
 > The application has only been tested on Windows and was designed with Windows in mind. It may or may not work correctly on other systems.
 > 
